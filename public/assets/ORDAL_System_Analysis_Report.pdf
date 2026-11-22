@@ -1,0 +1,311 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [ 7 0 R 9 0 R 11 0 R ] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Length 8386 >>
+stream
+0.040 0.060 0.100 rg 0.0 657.0 595.0 185.0 re f
+0.000 0.940 1.000 rg 0.0 653.0 595.0 4.0 re f
+BT /F2 10 Tf 0.000 0.940 1.000 rg 1 0 0 1 46.0 784.0 Tm (SYSTEM ANALYSIS & ARCHITECTURE REPORT) Tj ET
+BT /F2 26 Tf 1.000 1.000 1.000 rg 1 0 0 1 46.0 750.0 Tm (ORDAL ESPORTS HUB) Tj ET
+BT /F1 10.5 Tf 0.780 0.840 0.920 rg 1 0 0 1 46.0 726.0 Tm (Evaluasi Menyeluruh Arsitektur Sistem, Alur Data, RBAC, Keamanan SOC & Skalabilitas) Tj ET
+BT /F1 8.5 Tf 0.800 1.000 0.000 rg 1 0 0 1 46.0 690.0 Tm (Disusun Oleh: Senior System Analyst   |   Tanggal: 19 November 2026   |   Status: READY FOR PRODUCTION) Tj ET
+0.960 0.980 1.000 rg 0.7 w 0.820 0.870 0.930 RG 46.0 572.0 121.2 58.0 re B
+0.000 0.650 0.850 rg 46.0 627.0 121.2 3.0 re f
+BT /F2 7.2 Tf 0.400 0.480 0.580 rg 1 0 0 1 54.0 612.0 Tm (TOTAL MODUL UI) Tj ET
+BT /F2 11.5 Tf 0.050 0.120 0.220 rg 1 0 0 1 54.0 595.0 Tm (28 Komponen) Tj ET
+BT /F1 7.5 Tf 0.350 0.420 0.500 rg 1 0 0 1 54.0 581.0 Tm (React 19 + TypeScript) Tj ET
+0.960 0.980 1.000 rg 0.7 w 0.820 0.870 0.930 RG 173.2 572.0 121.2 58.0 re B
+0.000 0.650 0.850 rg 173.2 627.0 121.2 3.0 re f
+BT /F2 7.2 Tf 0.400 0.480 0.580 rg 1 0 0 1 181.2 612.0 Tm (REST API ROUTES) Tj ET
+BT /F2 11.5 Tf 0.050 0.120 0.220 rg 1 0 0 1 181.2 595.0 Tm (54 Endpoint) Tj ET
+BT /F1 7.5 Tf 0.350 0.420 0.500 rg 1 0 0 1 181.2 581.0 Tm (Express 4 + RBAC) Tj ET
+0.960 0.980 1.000 rg 0.7 w 0.820 0.870 0.930 RG 300.5 572.0 121.2 58.0 re B
+0.000 0.650 0.850 rg 300.5 627.0 121.2 3.0 re f
+BT /F2 7.2 Tf 0.400 0.480 0.580 rg 1 0 0 1 308.5 612.0 Tm (ROLE AKSES) Tj ET
+BT /F2 11.5 Tf 0.050 0.120 0.220 rg 1 0 0 1 308.5 595.0 Tm (4 Level) Tj ET
+BT /F1 7.5 Tf 0.350 0.420 0.500 rg 1 0 0 1 308.5 581.0 Tm (Guest/Team/Caster/Admin) Tj ET
+0.960 0.980 1.000 rg 0.7 w 0.820 0.870 0.930 RG 427.8 572.0 121.2 58.0 re B
+0.000 0.650 0.850 rg 427.8 627.0 121.2 3.0 re f
+BT /F2 7.2 Tf 0.400 0.480 0.580 rg 1 0 0 1 435.8 612.0 Tm (SECURITY STATUS) Tj ET
+BT /F2 11.5 Tf 0.050 0.120 0.220 rg 1 0 0 1 435.8 595.0 Tm (0 Critical/High) Tj ET
+BT /F1 7.5 Tf 0.350 0.420 0.500 rg 1 0 0 1 435.8 581.0 Tm (SOC WAF + Audit Lulus) Tj ET
+0.000 0.650 0.850 rg 46.0 540.0 4.0 18.0 re f
+BT /F2 13 Tf 0.050 0.100 0.180 rg 1 0 0 1 58.0 544.0 Tm (1. Ringkasan Eksekutif) Tj ET
+0.7 w 0.850 0.880 0.920 RG 46.0 536.0 m 549.0 536.0 l S
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 522.0 Tm (ORDAL Esports Hub adalah platform manajemen kompetisi esports dan booking scrim ber-shoutcaster) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 508.5 Tm (berbasis web full-stack \(React 19 + Vite + Express + TypeScript\). Berdasarkan pemeriksaan kode sumber,) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 495.0 Tm (struktur endpoint API, alur proses bisnis, dan lapisan keamanan SOC, sistem dinilai MATANG untuk rilis) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 481.5 Tm (tahap produksi awal \(MVP / Komunitas hingga Menengah\) dengan biaya infrastruktur sangat efisien.) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 465.0 Tm (Seluruh temuan pentest sebelumnya \(2 Critical, 1 High, 2 Medium, 1 Low\) telah diperbaiki dan) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 451.5 Tm (diverifikasi lulus 9/9 pengujian QA otomatis serta kompilasi TypeScript tanpa error. Fokus pengembangan) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 438.0 Tm (tahap berikutnya adalah integrasi eksternal produksi \(SMTP & Payment Gateway\) serta rencana migrasi) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 424.5 Tm (database saat skala trafik meningkat.) Tj ET
+0.000 0.650 0.850 rg 46.0 396.0 4.0 18.0 re f
+BT /F2 13 Tf 0.050 0.100 0.180 rg 1 0 0 1 58.0 400.0 Tm (2. Arsitektur Sistem & Tech Stack) Tj ET
+0.7 w 0.850 0.880 0.920 RG 46.0 392.0 m 549.0 392.0 l S
+0.070 0.120 0.200 rg 46.0 364.0 503.0 18.0 re f
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 51.0 369.0 Tm (Layer) Tj ET
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 141.0 369.0 Tm (Teknologi / Komponen) Tj ET
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 316.0 369.0 Tm (Peran & Evaluasi System Analyst) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 334.0 503.0 30.0 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 353.0 Tm (Frontend SPA) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 141.0 353.0 Tm (React 19, Vite 8, Tailwind CSS 4,) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 141.0 341.5 Tm (Recharts, Lucide) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 353.0 Tm (28 komponen modular; responsif desktop/mobile;) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 341.5 Tm (visualisasi analytics & squad profile interaktif.) Tj ET
+1.000 1.000 1.000 rg 0.4 w 0.860 0.890 0.930 RG 46.0 292.5 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 323.0 Tm (Backend API) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 141.0 323.0 Tm (Node.js v22, Express 4, TypeScript) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 141.0 311.5 Tm (\(tsx\)) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 323.0 Tm (54 endpoint RESTful terstruktur; pemisahan) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 311.5 Tm (middleware autentikasi, RBAC, rate limiter, dan) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 300.0 Tm (SOC.) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 262.5 503.0 30.0 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 281.5 Tm (Security / SOC) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 141.0 281.5 Tm (socSecurity.ts + Express Security) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 141.0 270.0 Tm (Headers) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 281.5 Tm (WAF \(XSS/SQLi/NoSQLi/Traversal/Proto\), Brute-Force) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 270.0 Tm (Auto-Ban, IP Blocklist, CSP, CORP, Kill Switch.) Tj ET
+1.000 1.000 1.000 rg 0.4 w 0.860 0.890 0.930 RG 46.0 221.0 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 251.5 Tm (Data Storage) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 141.0 251.5 Tm (Atomic JSON Store \(db.json,) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 141.0 240.0 Tm (auth.json, soc.json\)) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 251.5 Tm (Permission 0o600 + atomic write \(.tmp +) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 240.0 Tm (renameSync\). Ideal untuk MVP; disarankan PostgreSQL) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 228.5 Tm (untuk scale-up.) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 191.0 503.0 30.0 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 210.0 Tm (Media / Video) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 141.0 210.0 Tm (YouTube & Twitch Embed \(Live & VOD\)) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 210.0 Tm (Zero beban bandwidth video di server aplikasi;) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 316.0 198.5 Tm (mendukung siaran ONGOING & replay COMPLETED.) Tj ET
+0.000 0.650 0.850 rg 46.0 167.0 4.0 18.0 re f
+BT /F2 13 Tf 0.050 0.100 0.180 rg 1 0 0 1 58.0 171.0 Tm (3. Analisa Modul Fungsional & Alur Proses Bisnis) Tj ET
+0.7 w 0.850 0.880 0.920 RG 46.0 163.0 m 549.0 163.0 l S
+0.000 0.600 0.800 rg 49.0 151.0 3.5 3.5 re f
+BT /F2 9.2 Tf 0.070 0.120 0.200 rg 1 0 0 1 58.0 149.0 Tm (1. Portal Publik & Turnamen:) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 195.0 149.0 Tm (Mendukung siklus hidup lengkap: OPEN \(pendaftaran squad + rate limit\),) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 136.0 Tm (ONGOING \(tonton live stream untuk seluruh akun login + live bracket\), dan COMPLETED \(highlight + replay) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 123.0 Tm (VOD\). Klik nama tim membuka Squad Profile Analytics \(Recharts\).) Tj ET
+0.000 0.600 0.800 rg 49.0 110.0 3.5 3.5 re f
+BT /F2 9.2 Tf 0.070 0.120 0.200 rg 1 0 0 1 58.0 108.0 Tm (2. Scrim Arena & Open Lobby:) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 195.0 108.0 Tm (Slot jam terstandarisasi pada 20:00 WIB dan 22:00 WIB. Mendukung Open Lobby) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 95.0 Tm (dengan daftar pelamar \(challengerApplications\) dan seleksi lawan oleh Host Team Leader. Kalkulasi split-) Tj ET
+0.5 w 0.85 0.88 0.92 RG 46 40 m 549 40 l S
+BT /F1 8 Tf 0.45 0.50 0.58 rg 1 0 0 1 46 28 Tm (ORDAL Esports Hub - System Analysis Report | Generated 19 Nov 2026) Tj ET
+BT /F2 8 Tf 0.25 0.30 0.38 rg 1 0 0 1 491 28 Tm (Halaman 1 / 3) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 10594 >>
+stream
+0.040 0.060 0.100 rg 0.0 814.0 595.0 28.0 re f
+BT /F2 8.5 Tf 0.000 0.940 1.000 rg 1 0 0 1 46.0 824.0 Tm (ORDAL ESPORTS HUB  |  SYSTEM ANALYSIS REPORT) Tj ET
+BT /F1 7.5 Tf 0.650 0.720 0.800 rg 1 0 0 1 454.0 824.0 Tm (CONFIDENTIAL - SA REV 1.0) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 790.0 Tm (bill otomatis memakai Lobby Fee default/override per game. Endpoint /pay dan /release terkunci) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 777.0 Tm (autentikasi & kepemilikan tim.) Tj ET
+0.000 0.600 0.800 rg 49.0 764.0 3.5 3.5 re f
+BT /F2 9.2 Tf 0.070 0.120 0.200 rg 1 0 0 1 58.0 762.0 Tm (3. Dashboard Shoutcaster:) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 180.6 762.0 Tm (Dilengkapi filter & sort tab Approval \(status, game, tanggal, pencarian,) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 749.0 Tm (urutkan\), manajemen Day Off Multi-Date & Per Jam \(mode Full Day Off 0 Job dan Off Per Jam 1 Job / 1) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 736.0 Tm (Off\), input link YouTube live, dan pengajuan withdraw. Privasi finansial terjaga: Lobby Fee ORDAL tidak) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 723.0 Tm (pernah terekspos ke Caster.) Tj ET
+0.000 0.600 0.800 rg 49.0 710.0 3.5 3.5 re f
+BT /F2 9.2 Tf 0.070 0.120 0.200 rg 1 0 0 1 58.0 708.0 Tm (4. Dashboard Super Admin:) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 180.6 708.0 Tm (Mencakup Game Performance & Income Analytics \(filter per game, khusus Super) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 695.0 Tm (Admin\), Scrim Management \(tarif Lobby Fee\), Hero Settings, Tournament & Bracket Builder, Monitor Caster,) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 682.0 Tm (Audit Log, Export Data \(JSON/CSV\), dan SOC Security Command Center.) Tj ET
+0.000 0.650 0.850 rg 46.0 655.0 4.0 18.0 re f
+BT /F2 13 Tf 0.050 0.100 0.180 rg 1 0 0 1 58.0 659.0 Tm (4. Evaluasi RBAC, Keamanan & Sistem SOC) Tj ET
+0.7 w 0.850 0.880 0.920 RG 46.0 651.0 m 549.0 651.0 l S
+0.070 0.120 0.200 rg 46.0 623.0 503.0 18.0 re f
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 51.0 628.0 Tm (Role) Tj ET
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 136.0 628.0 Tm (Hak Akses Utama) Tj ET
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 336.0 628.0 Tm (Batasan Keamanan Terverifikasi) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 581.5 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 612.0 Tm (GUEST / PUBLIK) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 612.0 Tm (Lihat turnamen, bracket, highlight VOD,) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 600.5 Tm (daftar squad \(rate-limited\).) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 612.0 Tm (Tidak dapat buat scrim \(401\), tidak dapat akses) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 600.5 Tm (/pay, /release, analytics, atau live stream) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 589.0 Tm (ONGOING.) Tj ET
+1.000 1.000 1.000 rg 0.4 w 0.860 0.890 0.930 RG 46.0 540.0 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 570.5 Tm (TEAM) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 570.5 Tm (Daftar/ajukan scrim, pilih lawan lobby,) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 559.0 Tm (bayar sisi sendiri, refund, nonton live) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 547.5 Tm (stream.) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 570.5 Tm (Diblokir dari menantang diri sendiri,) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 559.0 Tm (bayar/release tim lain \(403 + SOC alert\), atau) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 547.5 Tm (akses admin/analytics.) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 498.5 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 529.0 Tm (CASTER) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 529.0 Tm (Approve/reject/reschedule scrim, atur Day) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 517.5 Tm (Off multi-date/jam, withdraw, nonton live) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 506.0 Tm (stream.) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 529.0 Tm (platformFee & scrimSettings disanitasi) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 517.5 Tm (\(0/undefined\); hanya bisa ubah profil & saldo) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 506.0 Tm (milik sendiri.) Tj ET
+1.000 1.000 1.000 rg 0.4 w 0.860 0.890 0.930 RG 46.0 457.0 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 487.5 Tm (SUPER_ADMIN) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 487.5 Tm (Kontrol penuh CRUD, Analytics Income,) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 476.0 Tm (Lobby Fee, Audit Log, Export Data, SOC) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 136.0 464.5 Tm (Command Center.) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 487.5 Tm (Reset password mandiri diblokir permanen \(403 +) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 476.0 Tm (SOC HIGH\); proteksi loopback IP agar tidak) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 336.0 464.5 Tm (self-lockout.) Tj ET
+BT /F2 10.5 Tf 0.080 0.200 0.360 rg 1 0 0 1 46.0 441.0 Tm (Ringkasan Kontrol Keamanan Aktif \(Hasil Re-Pentest: 0 Critical, 0 High, 0 Medium\)) Tj ET
+0.000 0.600 0.800 rg 49.0 428.0 3.5 3.5 re f
+BT /F2 9.2 Tf 0.070 0.120 0.200 rg 1 0 0 1 58.0 426.0 Tm (Kriptografi & Sesi:) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 151.9 426.0 Tm (Password menggunakan scrypt + random salt per akun dan crypto.timingSafeEqual. Token) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 413.0 Tm (sesi acak 256-bit \(TTL 24 jam\) dengan Emergency Kill Switch untuk mencabut seluruh sesi lain.) Tj ET
+0.000 0.600 0.800 rg 49.0 400.0 3.5 3.5 re f
+BT /F2 9.2 Tf 0.070 0.120 0.200 rg 1 0 0 1 58.0 398.0 Tm (Proteksi API & WAF:) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 151.9 398.0 Tm (Middleware SOC memblokir pola XSS, SQL Injection, NoSQL Injection, Path Traversal,) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 385.0 Tm (dan Prototype Pollution \(HTTP 403\), dilengkapi trust proxy \(anti IP-spoofing\) dan Content-Security-) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 372.0 Tm (Policy.) Tj ET
+0.000 0.600 0.800 rg 49.0 359.0 3.5 3.5 re f
+BT /F2 9.2 Tf 0.070 0.120 0.200 rg 1 0 0 1 58.0 357.0 Tm (Anti-Enumeration & OTP:) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 171.0 357.0 Tm (Endpoint forgot-password tidak lagi mengembalikan OTP di JSON response dan) Tj ET
+BT /F1 9.2 Tf 0.180 0.220 0.280 rg 1 0 0 1 58.0 344.0 Tm (memakai pesan seragam untuk mencegah enumerasi akun.) Tj ET
+0.000 0.650 0.850 rg 46.0 317.0 4.0 18.0 re f
+BT /F2 13 Tf 0.050 0.100 0.180 rg 1 0 0 1 58.0 321.0 Tm (5. Identifikasi Gap Sistem & Rekomendasi System Analyst) Tj ET
+0.7 w 0.850 0.880 0.920 RG 46.0 313.0 m 549.0 313.0 l S
+0.070 0.120 0.200 rg 46.0 285.0 503.0 18.0 re f
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 51.0 290.0 Tm (Area) Tj ET
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 123.0 290.0 Tm (Kondisi Saat Ini) Tj ET
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 243.0 290.0 Tm (Risiko / Dampak) Tj ET
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 383.0 290.0 Tm (Rekomendasi Perbaikan) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 243.5 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 274.0 Tm (Database) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 274.0 Tm (Flat-file JSON \(atomic) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 262.5 Tm (write\)) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 274.0 Tm (Lock contention / bottleneck) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 262.5 Tm (saat >500 user aktif) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 251.0 Tm (bersamaan.) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 274.0 Tm (Migrasi ke PostgreSQL \(managed/VPS\)) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 262.5 Tm (pada Fase Scale-Up.) Tj ET
+1.000 1.000 1.000 rg 0.4 w 0.860 0.890 0.930 RG 46.0 202.0 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 232.5 Tm (Email / OTP) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 232.5 Tm (OTP dicatat di log) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 221.0 Tm (server \(aman dari JSON) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 209.5 Tm (leak\)) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 232.5 Tm (User Team/Caster belum) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 221.0 Tm (menerima email OTP otomatis.) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 232.5 Tm (Sambungkan SMTP \(cPanel Rumahweb /) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 221.0 Tm (Brevo / Resend\) saat Go-Live.) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 160.5 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 191.0 Tm (Pembayaran) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 191.0 Tm (Konfirmasi bayar manual) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 179.5 Tm (per sisi tim / Admin) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 191.0 Tm (Risiko keterlambatan) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 179.5 Tm (verifikasi transfer saat) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 168.0 Tm (scrim ramai.) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 191.0 Tm (Integrasi Payment Gateway) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 179.5 Tm (\(Midtrans/Xendit QRIS + webhook\).) Tj ET
+1.000 1.000 1.000 rg 0.4 w 0.860 0.890 0.930 RG 46.0 119.0 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 149.5 Tm (Notifikasi) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 149.5 Tm (In-app toast) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 138.0 Tm (notification) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 149.5 Tm (Tim/Caster bisa terlambat) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 138.0 Tm (tahu ada pelamar atau jadwal) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 126.5 Tm (H-30m.) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 149.5 Tm (Tambah Discord Webhook / WhatsApp) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 138.0 Tm (Notification Bot.) Tj ET
+0.5 w 0.85 0.88 0.92 RG 46 40 m 549 40 l S
+BT /F1 8 Tf 0.45 0.50 0.58 rg 1 0 0 1 46 28 Tm (ORDAL Esports Hub - System Analysis Report | Generated 19 Nov 2026) Tj ET
+BT /F2 8 Tf 0.25 0.30 0.38 rg 1 0 0 1 491 28 Tm (Halaman 2 / 3) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 4510 >>
+stream
+0.040 0.060 0.100 rg 0.0 814.0 595.0 28.0 re f
+BT /F2 8.5 Tf 0.000 0.940 1.000 rg 1 0 0 1 46.0 824.0 Tm (ORDAL ESPORTS HUB  |  SYSTEM ANALYSIS REPORT) Tj ET
+BT /F1 7.5 Tf 0.650 0.720 0.800 rg 1 0 0 1 454.0 824.0 Tm (CONFIDENTIAL - SA REV 1.0) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 752.5 503.0 41.5 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 783.0 Tm (Real-time) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 783.0 Tm (REST polling / refresh) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 123.0 771.5 Tm (manual) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 783.0 Tm (Penonton perlu refresh untuk) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 771.5 Tm (melihat perubahan skor) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 243.0 760.0 Tm (bracket.) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 783.0 Tm (Tambahkan Server-Sent Events \(SSE\)) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 383.0 771.5 Tm (atau WebSocket.) Tj ET
+0.000 0.650 0.850 rg 46.0 728.5 4.0 18.0 re f
+BT /F2 13 Tf 0.050 0.100 0.180 rg 1 0 0 1 58.0 732.5 Tm (6. Kesiapan Deployment & Roadmap Implementasi) Tj ET
+0.7 w 0.850 0.880 0.920 RG 46.0 724.5 m 549.0 724.5 l S
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 710.5 Tm (Aplikasi kompatibel dengan Shared Hosting Node.js v20/v22 \(seperti Rumahweb Unlimited M, estimasi Rp) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 697.0 Tm (535rb - Rp 1,06jt/tahun\) maupun VPS Entry-Level \(Rp 1,04jt - Rp 1,5jt/tahun\) karena konsumsi RAM/CPU) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 683.5 Tm (rendah dan live stream menggunakan embed eksternal. Untuk deploy di cPanel, cukup lakukan build) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 670.0 Tm (frontend \(dist/\) dan bundle server.ts -> server.js dengan NODE_ENV=production.) Tj ET
+0.070 0.120 0.200 rg 46.0 639.5 503.0 18.0 re f
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 51.0 644.5 Tm (Fase) Tj ET
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 161.0 644.5 Tm (Target Waktu) Tj ET
+BT /F2 8.5 Tf 1.000 1.000 1.000 rg 1 0 0 1 246.0 644.5 Tm (Deliverable Prioritas) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 609.5 503.0 30.0 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 628.5 Tm (Fase 1: Go-Live MVP) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 161.0 628.5 Tm (Hari 1 - 30) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 246.0 628.5 Tm (Deploy produksi + HTTPS/Cloudflare, isi env secrets \(.env\),) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 246.0 617.0 Tm (integrasi SMTP OTP & Payment Gateway QRIS.) Tj ET
+1.000 1.000 1.000 rg 0.4 w 0.860 0.890 0.930 RG 46.0 579.5 503.0 30.0 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 598.5 Tm (Fase 2: Otomasi Ops) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 161.0 598.5 Tm (Hari 31 - 60) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 246.0 598.5 Tm (Notifikasi Discord/WA untuk alur Scrim & Jadwal Caster, upload) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 246.0 587.0 Tm (bukti hasil match & dispute oleh Team.) Tj ET
+0.960 0.970 0.990 rg 0.4 w 0.860 0.890 0.930 RG 46.0 549.5 503.0 30.0 re B
+BT /F2 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 51.0 568.5 Tm (Fase 3: Scale-Up) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 161.0 568.5 Tm (Hari 61 - 90) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 246.0 568.5 Tm (Migrasi JSON -> PostgreSQL, SSE/WebSocket live bracket, fitur) Tj ET
+BT /F1 8.5 Tf 0.120 0.160 0.220 rg 1 0 0 1 246.0 557.0 Tm (Sponsorship Placement & Team Pro.) Tj ET
+BT /F2 10.5 Tf 0.080 0.200 0.360 rg 1 0 0 1 46.0 533.5 Tm (Kesimpulan Akhir System Analyst) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 518.5 Tm (Secara keseluruhan, arsitektur dan kualitas implementasi ORDAL Esports Hub berada pada kategori SANGAT) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 505.0 Tm (BAIK untuk platform esports & manajemen scrim terintegrasi. Pemisahan role, mekanisme kuota 1 Job / 1) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 491.5 Tm (Off Caster, analitik pendapatan per game, serta lapisan keamanan SOC memberikan fondasi teknis dan) Tj ET
+BT /F1 9.5 Tf 0.180 0.220 0.280 rg 1 0 0 1 46.0 478.0 Tm (bisnis yang solid untuk langsung memasuki tahap Go-Live.) Tj ET
+0.5 w 0.85 0.88 0.92 RG 46 40 m 549 40 l S
+BT /F1 8 Tf 0.45 0.50 0.58 rg 1 0 0 1 46 28 Tm (ORDAL Esports Hub - System Analysis Report | Generated 19 Nov 2026) Tj ET
+BT /F2 8 Tf 0.25 0.30 0.38 rg 1 0 0 1 491 28 Tm (Halaman 3 / 3) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 10 0 R >>
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000136 00000 n 
+0000000233 00000 n 
+0000000335 00000 n 
+0000000430 00000 n 
+0000008868 00000 n 
+0000009014 00000 n 
+0000019661 00000 n 
+0000019807 00000 n 
+0000024370 00000 n 
+trailer
+<< /Size 12 /Root 1 0 R >>
+startxref
+24518
+%%EOF

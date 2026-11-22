@@ -1,0 +1,6 @@
+{
+  "name": "ORDAL Esports Hub",
+  "description": "Platform kompetitif esports terintegrasi khusus Point Blank, Free Fire, dan eFootball dengan Tournament Builder, Scrim Ber-Shoutcaster, Live Bracket, dan Dashboard Admin.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

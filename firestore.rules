@@ -1,0 +1,812 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Pillar 4 Global Safety Net: Default-Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // Phase 3: Global Hardened Primitives
+    // =========================================================================
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrapAdmin() {
+      return isSignedIn() &&
+        request.auth.token.email is string &&
+        request.auth.token.email.lower() == 'abdulfikri29@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrapAdmin() ||
+        (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    function hasUserProfile() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isLeagueOps() {
+      return hasUserProfile() && userRole() == 'LEAGUE_OPS';
+    }
+
+    function isCasterRole() {
+      return hasUserProfile() && userRole() == 'CASTER';
+    }
+
+    function isOpsOrAdmin() {
+      return isAdmin() || isLeagueOps();
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isNonEmptyStr(val, maxLen) {
+      return val is string && val.size() >= 1 && val.size() <= maxLen;
+    }
+
+    function isOptStr(data, key, maxLen) {
+      return !(key in data) || (data[key] is string && data[key].size() <= maxLen);
+    }
+
+    function isOptNum(data, key) {
+      return !(key in data) || (data[key] is number);
+    }
+
+    function isOptBool(data, key) {
+      return !(key in data) || (data[key] is bool);
+    }
+
+    function isBoundedStrList(val, maxItems) {
+      return val is list && val.size() <= maxItems && (val.size() == 0 || val[0] is string);
+    }
+
+    // =========================================================================
+    // Phase 4: Validation Blueprints (Anti-Update-Gap)
+    // =========================================================================
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'role', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'role', 'casterId', 'inviteId', 'teamProfile', 'createdAt']) &&
+        isValidId(data.uid) &&
+        isNonEmptyStr(data.email, 200) &&
+        isNonEmptyStr(data.displayName, 100) &&
+        data.role in ['TEAM', 'CASTER', 'LEAGUE_OPS', 'SUPER_ADMIN'] &&
+        isOptStr(data, 'casterId', 128) &&
+        isOptStr(data, 'inviteId', 128) &&
+        isNonEmptyStr(data.createdAt, 64) &&
+        (!( 'teamProfile' in data ) || (
+          data.teamProfile is map &&
+          data.teamProfile.keys().hasAll(['teamName', 'teamTag', 'teamLogo', 'primaryGame', 'captainIgn', 'captainContact', 'rosterCore', 'rosterSub']) &&
+          data.teamProfile.keys().hasOnly(['teamName', 'teamTag', 'teamLogo', 'primaryGame', 'captainIgn', 'captainContact', 'rosterCore', 'rosterSub']) &&
+          isNonEmptyStr(data.teamProfile.teamName, 100) &&
+          isNonEmptyStr(data.teamProfile.teamTag, 16) &&
+          data.teamProfile.teamLogo is string && data.teamProfile.teamLogo.size() <= 200000 &&
+          data.teamProfile.primaryGame in ['POINT BLANK', 'FREE FIRE', 'EFOOTBALL'] &&
+          isNonEmptyStr(data.teamProfile.captainIgn, 80) &&
+          data.teamProfile.captainContact is string && data.teamProfile.captainContact.size() <= 120 &&
+          isBoundedStrList(data.teamProfile.rosterCore, 10) &&
+          isBoundedStrList(data.teamProfile.rosterSub, 10)
+        ));
+    }
+
+    function isValidAdminMarker(data) {
+      return data.keys().hasAll(['uid', 'email', 'grantedAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'grantedAt']) &&
+        isValidId(data.uid) &&
+        isNonEmptyStr(data.email, 200) &&
+        isNonEmptyStr(data.grantedAt, 64);
+    }
+
+    function isValidRoleInvite(data) {
+      return data.keys().hasAll(['id', 'emailLower', 'displayName', 'role', 'createdByUid', 'createdAt']) &&
+        data.keys().hasOnly(['id', 'emailLower', 'displayName', 'role', 'casterId', 'createdByUid', 'createdAt']) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.emailLower, 200) &&
+        isNonEmptyStr(data.displayName, 100) &&
+        data.role in ['CASTER', 'LEAGUE_OPS', 'SUPER_ADMIN'] &&
+        isOptStr(data, 'casterId', 128) &&
+        isValidId(data.createdByUid) &&
+        isNonEmptyStr(data.createdAt, 64);
+    }
+
+    function isValidTournament(data) {
+      return data.keys().hasAll(['id', 'name', 'game', 'format', 'prizePool', 'maxTeams', 'registeredTeams', 'startDate', 'region', 'status', 'description']) &&
+        data.keys().hasOnly([
+          'id', 'name', 'game', 'format', 'prizePool', 'maxTeams', 'registeredTeams', 'startDate',
+          'region', 'status', 'description', 'organizer', 'registrationFee', 'mode', 'checkInInfo',
+          'prizeFirst', 'prizeSecond', 'prizeThird', 'prizeMvp', 'rules', 'liveStreamUrl', 'replayStreamUrl'
+        ]) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.name, 160) &&
+        data.game in ['POINT BLANK', 'FREE FIRE', 'EFOOTBALL'] &&
+        data.format in ['SINGLE ELIMINATION', 'DOUBLE ELIMINATION'] &&
+        isNonEmptyStr(data.prizePool, 80) &&
+        data.maxTeams is number && data.maxTeams >= 2 && data.maxTeams <= 512 &&
+        data.registeredTeams is number && data.registeredTeams >= 0 && data.registeredTeams <= 512 &&
+        isNonEmptyStr(data.startDate, 64) &&
+        isNonEmptyStr(data.region, 80) &&
+        data.status in ['OPEN', 'ONGOING', 'COMPLETED'] &&
+        data.description is string && data.description.size() <= 3000 &&
+        isOptStr(data, 'organizer', 120) &&
+        isOptStr(data, 'registrationFee', 80) &&
+        isOptStr(data, 'mode', 80) &&
+        isOptStr(data, 'checkInInfo', 300) &&
+        isOptStr(data, 'prizeFirst', 80) &&
+        isOptStr(data, 'prizeSecond', 80) &&
+        isOptStr(data, 'prizeThird', 80) &&
+        isOptStr(data, 'prizeMvp', 80) &&
+        isOptStr(data, 'rules', 6000) &&
+        isOptStr(data, 'liveStreamUrl', 500) &&
+        isOptStr(data, 'replayStreamUrl', 500);
+    }
+
+    function isValidMatch(data) {
+      return data.keys().hasAll(['id', 'tournamentId', 'game', 'round', 'bracketOrder', 'teamA', 'teamATag', 'teamB', 'teamBTag', 'scoreA', 'scoreB', 'mapName', 'status', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'tournamentId', 'game', 'round', 'bracketOrder', 'teamA', 'teamATag', 'teamB', 'teamBTag', 'scoreA', 'scoreB', 'mapName', 'status', 'winnerTag', 'nextMatchId', 'nextMatchSlot', 'mvpIgn', 'updatedAt']) &&
+        isValidId(data.id) &&
+        isValidId(data.tournamentId) &&
+        data.game in ['POINT BLANK', 'FREE FIRE', 'EFOOTBALL'] &&
+        data.round in ['QUARTERFINAL', 'SEMIFINAL', 'GRAND FINAL'] &&
+        data.bracketOrder is number && data.bracketOrder >= 0 &&
+        isNonEmptyStr(data.teamA, 100) &&
+        isNonEmptyStr(data.teamATag, 16) &&
+        isNonEmptyStr(data.teamB, 100) &&
+        isNonEmptyStr(data.teamBTag, 16) &&
+        data.scoreA is number && data.scoreA >= 0 &&
+        data.scoreB is number && data.scoreB >= 0 &&
+        isNonEmptyStr(data.mapName, 80) &&
+        data.status in ['UPCOMING', 'LIVE', 'FINISHED'] &&
+        isOptStr(data, 'winnerTag', 16) &&
+        isOptStr(data, 'nextMatchId', 128) &&
+        (!( 'nextMatchSlot' in data ) || data.nextMatchSlot in ['A', 'B']) &&
+        isOptStr(data, 'mvpIgn', 80) &&
+        isNonEmptyStr(data.updatedAt, 64);
+    }
+
+    function isValidSquad(data) {
+      return data.keys().hasAll(['id', 'name', 'tag', 'tournamentId', 'captainIgn', 'roster', 'seed', 'checkInStatus', 'registeredAt', 'ownerUid']) &&
+        data.keys().hasOnly(['id', 'name', 'tag', 'tournamentId', 'captainIgn', 'roster', 'seed', 'checkInStatus', 'registeredAt', 'ownerUid']) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.name, 100) &&
+        isNonEmptyStr(data.tag, 12) &&
+        isValidId(data.tournamentId) &&
+        isNonEmptyStr(data.captainIgn, 80) &&
+        isBoundedStrList(data.roster, 12) &&
+        data.seed is number && data.seed >= 0 &&
+        data.checkInStatus in ['CHECKED IN', 'PENDING', 'DISQUALIFIED'] &&
+        isNonEmptyStr(data.registeredAt, 64) &&
+        isValidId(data.ownerUid);
+    }
+
+    function isValidSquadPrivate(data) {
+      return data.keys().hasAll(['id', 'squadId', 'ownerUid', 'captainContact']) &&
+        data.keys().hasOnly(['id', 'squadId', 'ownerUid', 'captainContact']) &&
+        isValidId(data.id) &&
+        isValidId(data.squadId) &&
+        isValidId(data.ownerUid) &&
+        data.captainContact is string && data.captainContact.size() <= 120;
+    }
+
+    function isValidNews(data) {
+      return data.keys().hasAll(['id', 'title', 'category', 'author', 'publishedAt', 'readTime', 'excerpt', 'content', 'accentTone']) &&
+        data.keys().hasOnly(['id', 'title', 'category', 'author', 'publishedAt', 'readTime', 'excerpt', 'content', 'accentTone', 'thumbnailUrl']) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.title, 200) &&
+        data.category in ['META UPDATE', 'ROSTER LEAKS', 'TOURNAMENT RECAP', 'PATCH NOTES'] &&
+        isNonEmptyStr(data.author, 100) &&
+        isNonEmptyStr(data.publishedAt, 64) &&
+        isNonEmptyStr(data.readTime, 32) &&
+        isNonEmptyStr(data.excerpt, 500) &&
+        isNonEmptyStr(data.content, 20000) &&
+        data.accentTone in ['cyan', 'crimson', 'lime'] &&
+        isOptStr(data, 'thumbnailUrl', 400000);
+    }
+
+    function isValidCaster(data) {
+      return data.keys().hasAll(['id', 'name', 'alias', 'specialtyGames', 'rateCard', 'maxMatchesPerDay', 'dayOffDates', 'bio', 'status']) &&
+        data.keys().hasOnly(['id', 'name', 'alias', 'specialtyGames', 'rateCard', 'maxMatchesPerDay', 'dayOffDates', 'dayOffSlots', 'bio', 'status', 'isVerified', 'isTopCaster', 'ownerUid']) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.name, 100) &&
+        data.alias is string && data.alias.size() <= 60 &&
+        isBoundedStrList(data.specialtyGames, 5) &&
+        data.rateCard is number && data.rateCard >= 0 &&
+        data.maxMatchesPerDay is number && data.maxMatchesPerDay >= 1 && data.maxMatchesPerDay <= 20 &&
+        isBoundedStrList(data.dayOffDates, 120) &&
+        (!( 'dayOffSlots' in data ) || data.dayOffSlots is map) &&
+        data.bio is string && data.bio.size() <= 1000 &&
+        data.status in ['ACTIVE', 'INACTIVE'] &&
+        isOptBool(data, 'isVerified') &&
+        isOptBool(data, 'isTopCaster') &&
+        isOptStr(data, 'ownerUid', 128);
+    }
+
+    function isValidScrim(data) {
+      return data.keys().hasAll([
+          'id', 'game', 'date', 'timeSlot', 'mode', 'status', 'casterId', 'casterName',
+          'casterRate', 'casterApprovalStatus', 'platformFee', 'totalCost', 'splitCostPerTeam',
+          'hostTeamName', 'hostTeamLogo', 'hostRosterCore', 'hostRosterSub',
+          'challengerTeamName', 'challengerTeamLogo', 'challengerRosterCore', 'challengerRosterSub',
+          'hostPaid', 'challengerPaid', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'game', 'date', 'timeSlot', 'mode', 'status', 'casterId', 'casterName',
+          'casterRate', 'casterApprovalStatus', 'platformFee', 'totalCost', 'splitCostPerTeam',
+          'hostUserId', 'hostTeamName', 'hostTeamLogo', 'hostRosterCore', 'hostRosterSub',
+          'challengerUserId', 'challengerTeamName', 'challengerTeamLogo', 'challengerRosterCore', 'challengerRosterSub',
+          'challengerApplications', 'hostPaid', 'challengerPaid', 'paymentDeadlineAt',
+          'hostScore', 'challengerScore', 'winnerSide', 'resultRecorded', 'youtubeStreamUrl',
+          'rescheduleProposal', 'refundRequests', 'createdAt'
+        ]) &&
+        isValidId(data.id) &&
+        data.game in ['POINT BLANK', 'FREE FIRE', 'EFOOTBALL'] &&
+        isNonEmptyStr(data.date, 32) &&
+        isNonEmptyStr(data.timeSlot, 32) &&
+        data.mode in ['OPEN_LOBBY', 'DIRECT_CHALLENGE'] &&
+        data.status in ['OPEN_LOBBY', 'WAITING_APPROVAL', 'AWAITING_PAYMENT', 'PARTIALLY_PAID', 'CONFIRMED', 'CANCELLED'] &&
+        data.casterId is string && data.casterId.size() <= 128 &&
+        data.casterName is string && data.casterName.size() <= 100 &&
+        data.casterRate is number && data.casterRate >= 0 &&
+        data.casterApprovalStatus in ['PENDING', 'APPROVED', 'REJECTED', 'NOT_REQUIRED'] &&
+        data.platformFee is number && data.platformFee >= 0 &&
+        data.totalCost is number && data.totalCost >= 0 &&
+        data.splitCostPerTeam is number && data.splitCostPerTeam >= 0 &&
+        isOptStr(data, 'hostUserId', 128) &&
+        isNonEmptyStr(data.hostTeamName, 100) &&
+        data.hostTeamLogo is string && data.hostTeamLogo.size() <= 200000 &&
+        isBoundedStrList(data.hostRosterCore, 10) &&
+        isBoundedStrList(data.hostRosterSub, 10) &&
+        isOptStr(data, 'challengerUserId', 128) &&
+        data.challengerTeamName is string && data.challengerTeamName.size() <= 100 &&
+        data.challengerTeamLogo is string && data.challengerTeamLogo.size() <= 200000 &&
+        isBoundedStrList(data.challengerRosterCore, 10) &&
+        isBoundedStrList(data.challengerRosterSub, 10) &&
+        (!( 'challengerApplications' in data ) || (data.challengerApplications is list && data.challengerApplications.size() <= 30 && (data.challengerApplications.size() == 0 || data.challengerApplications[0] is map))) &&
+        data.hostPaid is bool &&
+        data.challengerPaid is bool &&
+        isOptStr(data, 'paymentDeadlineAt', 64) &&
+        isOptNum(data, 'hostScore') &&
+        isOptNum(data, 'challengerScore') &&
+        (!( 'winnerSide' in data ) || data.winnerSide in ['host', 'challenger', 'draw']) &&
+        isOptBool(data, 'resultRecorded') &&
+        isOptStr(data, 'youtubeStreamUrl', 500) &&
+        (!( 'rescheduleProposal' in data ) || data.rescheduleProposal is map) &&
+        (!( 'refundRequests' in data ) || (data.refundRequests is list && data.refundRequests.size() <= 10 && (data.refundRequests.size() == 0 || data.refundRequests[0] is map))) &&
+        isNonEmptyStr(data.createdAt, 64);
+    }
+
+    function isValidWithdrawal(data) {
+      return data.keys().hasAll(['id', 'casterId', 'casterUid', 'casterName', 'amount', 'bankOrWallet', 'accountNumber', 'accountName', 'status', 'requestedAt']) &&
+        data.keys().hasOnly(['id', 'casterId', 'casterUid', 'casterName', 'amount', 'bankOrWallet', 'accountNumber', 'accountName', 'note', 'status', 'requestedAt', 'processedAt']) &&
+        isValidId(data.id) &&
+        isValidId(data.casterId) &&
+        isValidId(data.casterUid) &&
+        isNonEmptyStr(data.casterName, 100) &&
+        data.amount is number && data.amount > 0 &&
+        isNonEmptyStr(data.bankOrWallet, 64) &&
+        isNonEmptyStr(data.accountNumber, 64) &&
+        isNonEmptyStr(data.accountName, 100) &&
+        isOptStr(data, 'note', 300) &&
+        data.status in ['PENDING', 'PAID', 'REJECTED'] &&
+        isNonEmptyStr(data.requestedAt, 64) &&
+        isOptStr(data, 'processedAt', 64);
+    }
+
+    function isValidPayment(data) {
+      return data.keys().hasAll(['id', 'invoiceNumber', 'category', 'status', 'title', 'payerName', 'receiverName', 'amount', 'lineItems', 'issuedAt', 'history']) &&
+        data.keys().hasOnly([
+          'id', 'invoiceNumber', 'category', 'status', 'ownerUid', 'casterUid', 'scrimId', 'scrimSide',
+          'withdrawalId', 'refundId', 'casterId', 'game', 'title', 'payerName', 'payerEmail',
+          'receiverName', 'amount', 'baseAmount', 'gatewayFee', 'casterFeeShare', 'platformFeeShare',
+          'lineItems', 'paymentMethod', 'gatewayProvider', 'gatewayChannel', 'gatewayOrderId',
+          'vaNumber', 'qrPayload', 'gatewayExpiresAt', 'idempotencyKey', 'referenceCode',
+          'bankOrWallet', 'accountNumber', 'accountName', 'proofNote', 'proofImageUrl',
+          'issuedAt', 'dueAt', 'submittedAt', 'validatedAt', 'validatedBy', 'validationNote', 'history'
+        ]) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.invoiceNumber, 64) &&
+        data.category in ['SCRIM_SPLIT_BILL', 'CASTER_PAYOUT', 'SCRIM_REFUND'] &&
+        data.status in ['UNPAID', 'PENDING_VALIDATION', 'VERIFIED', 'REJECTED', 'EXPIRED'] &&
+        isOptStr(data, 'ownerUid', 128) &&
+        isOptStr(data, 'casterUid', 128) &&
+        isOptStr(data, 'scrimId', 128) &&
+        (!( 'scrimSide' in data ) || data.scrimSide in ['host', 'challenger']) &&
+        isOptStr(data, 'withdrawalId', 128) &&
+        isOptStr(data, 'refundId', 128) &&
+        isOptStr(data, 'casterId', 128) &&
+        (!( 'game' in data ) || data.game in ['POINT BLANK', 'FREE FIRE', 'EFOOTBALL']) &&
+        isNonEmptyStr(data.title, 200) &&
+        isNonEmptyStr(data.payerName, 120) &&
+        isOptStr(data, 'payerEmail', 200) &&
+        isNonEmptyStr(data.receiverName, 120) &&
+        data.amount is number && data.amount >= 0 &&
+        isOptNum(data, 'baseAmount') &&
+        isOptNum(data, 'gatewayFee') &&
+        isOptNum(data, 'casterFeeShare') &&
+        isOptNum(data, 'platformFeeShare') &&
+        data.lineItems is list && data.lineItems.size() <= 20 && (data.lineItems.size() == 0 || data.lineItems[0] is map) &&
+        isOptStr(data, 'paymentMethod', 64) &&
+        isOptStr(data, 'gatewayProvider', 64) &&
+        isOptStr(data, 'gatewayChannel', 64) &&
+        isOptStr(data, 'gatewayOrderId', 128) &&
+        isOptStr(data, 'vaNumber', 64) &&
+        isOptStr(data, 'qrPayload', 1000) &&
+        isOptStr(data, 'gatewayExpiresAt', 64) &&
+        isOptStr(data, 'idempotencyKey', 128) &&
+        isOptStr(data, 'referenceCode', 128) &&
+        isOptStr(data, 'bankOrWallet', 64) &&
+        isOptStr(data, 'accountNumber', 64) &&
+        isOptStr(data, 'accountName', 100) &&
+        isOptStr(data, 'proofNote', 500) &&
+        isOptStr(data, 'proofImageUrl', 400000) &&
+        isNonEmptyStr(data.issuedAt, 64) &&
+        isOptStr(data, 'dueAt', 64) &&
+        isOptStr(data, 'submittedAt', 64) &&
+        isOptStr(data, 'validatedAt', 64) &&
+        isOptStr(data, 'validatedBy', 120) &&
+        isOptStr(data, 'validationNote', 500) &&
+        data.history is list && data.history.size() <= 50 && (data.history.size() == 0 || data.history[0] is map);
+    }
+
+    function isValidLedger(data) {
+      return data.keys().hasAll(['id', 'timestamp', 'paymentId', 'invoiceNumber', 'accountBucket', 'direction', 'amount', 'description']) &&
+        data.keys().hasOnly(['id', 'timestamp', 'paymentId', 'invoiceNumber', 'accountBucket', 'direction', 'amount', 'description', 'actorEmail', 'scrimId', 'casterId']) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.timestamp, 64) &&
+        isValidId(data.paymentId) &&
+        isNonEmptyStr(data.invoiceNumber, 64) &&
+        data.accountBucket in ['ESCROW_TEAM', 'CASTER_PAYABLE', 'PLATFORM_REVENUE', 'PG_FEE_EXPENSE', 'REFUND_PAYABLE'] &&
+        data.direction in ['CREDIT', 'DEBIT'] &&
+        data.amount is number && data.amount >= 0 &&
+        isNonEmptyStr(data.description, 400) &&
+        isOptStr(data, 'actorEmail', 200) &&
+        isOptStr(data, 'scrimId', 128) &&
+        isOptStr(data, 'casterId', 128);
+    }
+
+    function isValidSetting(data) {
+      return data.keys().hasAll(['id', 'payload', 'updatedAt']) &&
+        data.keys().hasOnly(['id', 'payload', 'updatedAt']) &&
+        isValidId(data.id) &&
+        data.payload is map &&
+        isNonEmptyStr(data.updatedAt, 64);
+    }
+
+    function isValidAuditLog(data) {
+      return data.keys().hasAll(['id', 'timestamp', 'actorId', 'actorEmail', 'actorName', 'resource', 'action', 'targetId', 'targetLabel', 'summary']) &&
+        data.keys().hasOnly(['id', 'timestamp', 'actorId', 'actorEmail', 'actorName', 'resource', 'action', 'targetId', 'targetLabel', 'summary', 'changedFields', 'prevHash', 'entryHash']) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.timestamp, 64) &&
+        isNonEmptyStr(data.actorId, 128) &&
+        isNonEmptyStr(data.actorEmail, 200) &&
+        isNonEmptyStr(data.actorName, 120) &&
+        data.resource in ['TOURNAMENT', 'MATCH', 'SQUAD', 'HERO', 'BRAND', 'PAYMENT', 'CASTER', 'USER'] &&
+        data.action in ['CREATE', 'UPDATE', 'DELETE', 'GENERATE_BRACKET'] &&
+        isNonEmptyStr(data.targetId, 128) &&
+        isNonEmptyStr(data.targetLabel, 200) &&
+        isNonEmptyStr(data.summary, 600) &&
+        (!( 'changedFields' in data ) || isBoundedStrList(data.changedFields, 30)) &&
+        isOptStr(data, 'prevHash', 128) &&
+        isOptStr(data, 'entryHash', 128);
+    }
+
+    function isValidSocEvent(data) {
+      return data.keys().hasAll(['id', 'timestamp', 'severity', 'category', 'ip', 'method', 'path', 'summary', 'status']) &&
+        data.keys().hasOnly(['id', 'timestamp', 'severity', 'category', 'ip', 'method', 'path', 'actorEmail', 'actorRole', 'userAgent', 'summary', 'details', 'status']) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.timestamp, 64) &&
+        data.severity in ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] &&
+        data.category in ['WAF_BLOCK', 'BRUTE_FORCE', 'AUTH_FAILURE', 'RBAC_VIOLATION', 'RATE_LIMIT', 'IP_BLOCKED', 'POLICY_CHANGE', 'SESSION_REVOKED', 'SESSION_HIJACK'] &&
+        isNonEmptyStr(data.ip, 64) &&
+        isNonEmptyStr(data.method, 16) &&
+        isNonEmptyStr(data.path, 240) &&
+        isOptStr(data, 'actorEmail', 200) &&
+        (!( 'actorRole' in data ) || data.actorRole in ['TEAM', 'CASTER', 'LEAGUE_OPS', 'SUPER_ADMIN']) &&
+        isOptStr(data, 'userAgent', 400) &&
+        isNonEmptyStr(data.summary, 400) &&
+        isOptStr(data, 'details', 1000) &&
+        data.status in ['OPEN', 'ACKNOWLEDGED', 'RESOLVED'];
+    }
+
+    function isValidSocBlockedIp(data) {
+      return data.keys().hasAll(['id', 'ip', 'reason', 'blockedAt', 'blockedBy', 'autoBlocked', 'hits']) &&
+        data.keys().hasOnly(['id', 'ip', 'reason', 'blockedAt', 'expiresAt', 'blockedBy', 'autoBlocked', 'hits']) &&
+        isValidId(data.id) &&
+        isNonEmptyStr(data.ip, 64) &&
+        isNonEmptyStr(data.reason, 300) &&
+        isNonEmptyStr(data.blockedAt, 64) &&
+        (!( 'expiresAt' in data ) || data.expiresAt == null || (data.expiresAt is string && data.expiresAt.size() <= 64)) &&
+        isNonEmptyStr(data.blockedBy, 120) &&
+        data.autoBlocked is bool &&
+        data.hits is number && data.hits >= 0;
+    }
+
+    function isValidSocPolicy(data) {
+      return data.keys().hasAll(['wafEnabled', 'autoBlockEnabled', 'bruteForceThreshold', 'autoBlockDurationMinutes', 'strictApiHeaders', 'alertOnRbacViolation']) &&
+        data.keys().hasOnly(['wafEnabled', 'autoBlockEnabled', 'bruteForceThreshold', 'autoBlockDurationMinutes', 'strictApiHeaders', 'alertOnRbacViolation']) &&
+        data.wafEnabled is bool &&
+        data.autoBlockEnabled is bool &&
+        data.bruteForceThreshold is number && data.bruteForceThreshold >= 1 && data.bruteForceThreshold <= 50 &&
+        data.autoBlockDurationMinutes is number && data.autoBlockDurationMinutes >= 1 && data.autoBlockDurationMinutes <= 10080 &&
+        data.strictApiHeaders is bool &&
+        data.alertOnRbacViolation is bool;
+    }
+
+    // =========================================================================
+    // Collection Rules (Pillar 1-8 Enforced)
+    // =========================================================================
+    match /test/{docId} {
+      allow get: if isValidId(docId);
+      allow list, write: if false;
+    }
+
+    match /admins/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isValidId(userId) &&
+        isSignedIn() &&
+        isValidAdminMarker(incoming()) &&
+        incoming().uid == userId &&
+        (
+          isAdmin() ||
+          (isOwner(userId) && isBootstrapAdmin())
+        );
+      allow update, delete: if isValidId(userId) && isAdmin() && isValidAdminMarker(incoming());
+    }
+
+    match /roleInvites/{inviteId} {
+      allow get: if isValidId(inviteId) && (
+        isAdmin() ||
+        (isSignedIn() && existing().emailLower == request.auth.token.email.lower())
+      );
+      allow list: if isAdmin() || (isSignedIn() && resource.data.emailLower == request.auth.token.email.lower());
+      allow create, update: if isValidId(inviteId) && isAdmin() && isValidRoleInvite(incoming()) && incoming().id == inviteId;
+      allow delete: if isValidId(inviteId) && isAdmin();
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isValidId(userId) &&
+        isSignedIn() &&
+        isValidUser(incoming()) &&
+        incoming().uid == userId &&
+        (
+          (
+            isOwner(userId) &&
+            incoming().email.lower() == request.auth.token.email.lower() &&
+            (
+              incoming().role == 'TEAM' ||
+              (incoming().role == 'SUPER_ADMIN' && isBootstrapAdmin()) ||
+              (
+                'inviteId' in incoming() &&
+                isValidId(incoming().inviteId) &&
+                exists(/databases/$(database)/documents/roleInvites/$(incoming().inviteId)) &&
+                get(/databases/$(database)/documents/roleInvites/$(incoming().inviteId)).data.emailLower == request.auth.token.email.lower() &&
+                get(/databases/$(database)/documents/roleInvites/$(incoming().inviteId)).data.role == incoming().role &&
+                (
+                  incoming().role != 'CASTER' ||
+                  ('casterId' in incoming() && incoming().casterId == get(/databases/$(database)/documents/roleInvites/$(incoming().inviteId)).data.casterId)
+                )
+              )
+            )
+          ) ||
+          isAdmin()
+        );
+      allow update: if isValidId(userId) &&
+        isSignedIn() &&
+        isValidUser(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        (
+          isAdmin() ||
+          (
+            isOwner(userId) &&
+            incoming().role == existing().role &&
+            incoming().email == existing().email &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'teamProfile'])
+          )
+        );
+      allow delete: if isValidId(userId) && isAdmin();
+    }
+
+    match /tournaments/{tournamentId} {
+      allow get: if isValidId(tournamentId);
+      allow list: if true;
+      allow create: if isValidId(tournamentId) && isOpsOrAdmin() && isValidTournament(incoming()) && incoming().id == tournamentId;
+      allow update: if isValidId(tournamentId) && isValidTournament(incoming()) && (
+        isOpsOrAdmin() ||
+        (
+          isSignedIn() &&
+          existing().status == 'OPEN' &&
+          incoming().diff(existing()).affectedKeys().hasOnly(['registeredTeams']) &&
+          incoming().registeredTeams == existing().registeredTeams + 1 &&
+          incoming().registeredTeams <= existing().maxTeams
+        )
+      );
+      allow delete: if isValidId(tournamentId) && isOpsOrAdmin();
+    }
+
+    match /matches/{matchId} {
+      allow get: if isValidId(matchId);
+      allow list: if true;
+      allow create, update: if isValidId(matchId) && isOpsOrAdmin() && isValidMatch(incoming()) && incoming().id == matchId;
+      allow delete: if isValidId(matchId) && isOpsOrAdmin();
+    }
+
+    match /squads/{squadId} {
+      allow get: if isValidId(squadId);
+      allow list: if true;
+      allow create: if isValidId(squadId) &&
+        isSignedIn() &&
+        isValidSquad(incoming()) &&
+        incoming().id == squadId &&
+        existsAfter(/databases/$(database)/documents/tournaments/$(incoming().tournamentId)) &&
+        existsAfter(/databases/$(database)/documents/squadsPrivate/$(squadId)) &&
+        (
+          isOpsOrAdmin() ||
+          incoming().ownerUid == request.auth.uid
+        );
+      allow update: if isValidId(squadId) &&
+        isValidSquad(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().ownerUid == existing().ownerUid &&
+        incoming().registeredAt == existing().registeredAt &&
+        isOpsOrAdmin();
+      allow delete: if isValidId(squadId) && isOpsOrAdmin();
+    }
+
+    match /squadsPrivate/{squadId} {
+      allow get: if isValidId(squadId) && (
+        isOpsOrAdmin() ||
+        (isSignedIn() && existing().ownerUid == request.auth.uid)
+      );
+      allow list: if isOpsOrAdmin() || (isSignedIn() && resource.data.ownerUid == request.auth.uid);
+      allow create: if isValidId(squadId) &&
+        isSignedIn() &&
+        isValidSquadPrivate(incoming()) &&
+        incoming().id == squadId &&
+        incoming().squadId == squadId &&
+        (isOpsOrAdmin() || incoming().ownerUid == request.auth.uid);
+      allow update: if isValidId(squadId) &&
+        isValidSquadPrivate(incoming()) &&
+        incoming().ownerUid == existing().ownerUid &&
+        isOpsOrAdmin();
+      allow delete: if isValidId(squadId) && isOpsOrAdmin();
+    }
+
+    match /news/{newsId} {
+      allow get: if isValidId(newsId);
+      allow list: if true;
+      allow create, update: if isValidId(newsId) && isAdmin() && isValidNews(incoming()) && incoming().id == newsId;
+      allow delete: if isValidId(newsId) && isAdmin();
+    }
+
+    match /casters/{casterId} {
+      allow get: if isValidId(casterId);
+      allow list: if true;
+      allow create: if isValidId(casterId) && isAdmin() && isValidCaster(incoming()) && incoming().id == casterId;
+      allow update: if isValidId(casterId) &&
+        isValidCaster(incoming()) &&
+        incoming().id == existing().id &&
+        (
+          isAdmin() ||
+          (
+            isCasterRole() &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.casterId == casterId &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['dayOffDates', 'dayOffSlots', 'bio', 'status', 'maxMatchesPerDay'])
+          )
+        );
+      allow delete: if isValidId(casterId) && isAdmin();
+    }
+
+    match /scrims/{scrimId} {
+      allow get: if isValidId(scrimId);
+      allow list: if true;
+      allow create: if isValidId(scrimId) &&
+        isSignedIn() &&
+        isValidScrim(incoming()) &&
+        incoming().id == scrimId &&
+        (
+          isAdmin() ||
+          (
+            incoming().hostUserId == request.auth.uid &&
+            incoming().hostPaid == false &&
+            incoming().challengerPaid == false &&
+            incoming().status in ['OPEN_LOBBY', 'WAITING_APPROVAL']
+          )
+        );
+      allow update: if isValidId(scrimId) &&
+        isSignedIn() &&
+        isValidScrim(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().createdAt == existing().createdAt &&
+        (
+          isAdmin() ||
+          (
+            existing().status != 'CANCELLED' &&
+            (
+              // Action 1: Team challenges an OPEN_LOBBY scrim
+              (
+                existing().mode == 'OPEN_LOBBY' &&
+                existing().status == 'OPEN_LOBBY' &&
+                existing().hostUserId != request.auth.uid &&
+                incoming().diff(existing()).affectedKeys().hasOnly(['challengerApplications'])
+              ) ||
+              // Action 2: Host selects/rejects a challenger or cancels/releases before confirmation
+              (
+                existing().hostUserId == request.auth.uid &&
+                incoming().status in ['OPEN_LOBBY', 'WAITING_APPROVAL', 'AWAITING_PAYMENT', 'CANCELLED'] &&
+                incoming().diff(existing()).affectedKeys().hasOnly([
+                  'challengerApplications', 'challengerUserId', 'challengerTeamName', 'challengerTeamLogo',
+                  'challengerRosterCore', 'challengerRosterSub', 'status', 'casterApprovalStatus',
+                  'paymentDeadlineAt', 'rescheduleProposal', 'refundRequests'
+                ])
+              ) ||
+              // Action 3: Assigned challenger responds to reschedule or requests refund/cancel
+              (
+                'challengerUserId' in existing() &&
+                existing().challengerUserId == request.auth.uid &&
+                incoming().status in [existing().status, 'CANCELLED'] &&
+                incoming().diff(existing()).affectedKeys().hasOnly(['status', 'rescheduleProposal', 'refundRequests'])
+              ) ||
+              // Action 4: Assigned caster approves/rejects, proposes reschedule, or updates stream link
+              (
+                isCasterRole() &&
+                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.casterId == existing().casterId &&
+                incoming().status in [existing().status, 'AWAITING_PAYMENT', 'CANCELLED'] &&
+                incoming().diff(existing()).affectedKeys().hasOnly([
+                  'status', 'casterApprovalStatus', 'paymentDeadlineAt', 'rescheduleProposal', 'youtubeStreamUrl'
+                ])
+              )
+            )
+          )
+        );
+      allow delete: if isValidId(scrimId) && isAdmin();
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow get: if isValidId(withdrawalId) && (
+        isAdmin() ||
+        (isSignedIn() && existing().casterUid == request.auth.uid)
+      );
+      allow list: if isAdmin() || (isSignedIn() && resource.data.casterUid == request.auth.uid);
+      allow create: if isValidId(withdrawalId) &&
+        isSignedIn() &&
+        isValidWithdrawal(incoming()) &&
+        incoming().id == withdrawalId &&
+        (
+          isAdmin() ||
+          (
+            isCasterRole() &&
+            incoming().casterUid == request.auth.uid &&
+            incoming().casterId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.casterId &&
+            incoming().status == 'PENDING'
+          )
+        );
+      allow update: if isValidId(withdrawalId) && isAdmin() && isValidWithdrawal(incoming());
+      allow delete: if isValidId(withdrawalId) && isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow get: if isValidId(paymentId) && (
+        isAdmin() ||
+        (isSignedIn() && (existing().ownerUid == request.auth.uid || existing().casterUid == request.auth.uid))
+      );
+      allow list: if isAdmin() || (
+        isSignedIn() && (resource.data.ownerUid == request.auth.uid || resource.data.casterUid == request.auth.uid)
+      );
+      allow create: if isValidId(paymentId) &&
+        isSignedIn() &&
+        isValidPayment(incoming()) &&
+        incoming().id == paymentId &&
+        (
+          isAdmin() ||
+          (
+            incoming().status == 'UNPAID' &&
+            incoming().category == 'SCRIM_SPLIT_BILL' &&
+            (
+              incoming().ownerUid == request.auth.uid ||
+              (
+                'scrimId' in incoming() &&
+                isValidId(incoming().scrimId) &&
+                exists(/databases/$(database)/documents/scrims/$(incoming().scrimId)) &&
+                (
+                  get(/databases/$(database)/documents/scrims/$(incoming().scrimId)).data.hostUserId == request.auth.uid ||
+                  get(/databases/$(database)/documents/scrims/$(incoming().scrimId)).data.challengerUserId == request.auth.uid ||
+                  (
+                    isCasterRole() &&
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.casterId == get(/databases/$(database)/documents/scrims/$(incoming().scrimId)).data.casterId
+                  )
+                )
+              )
+            )
+          )
+        );
+      allow update: if isValidId(paymentId) &&
+        isSignedIn() &&
+        isValidPayment(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().issuedAt == existing().issuedAt &&
+        (
+          isAdmin() ||
+          (
+            existing().status != 'VERIFIED' &&
+            existing().ownerUid == request.auth.uid &&
+            incoming().ownerUid == existing().ownerUid &&
+            incoming().amount >= existing().amount &&
+            incoming().status in ['UNPAID', 'PENDING_VALIDATION'] &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'status', 'paymentMethod', 'gatewayProvider', 'gatewayChannel',
+              'gatewayOrderId', 'vaNumber', 'qrPayload', 'gatewayExpiresAt', 'gatewayFee',
+              'amount', 'idempotencyKey', 'referenceCode', 'proofNote', 'proofImageUrl',
+              'submittedAt', 'history'
+            ])
+          )
+        );
+      allow delete: if isValidId(paymentId) && isAdmin();
+    }
+
+    match /ledger/{ledgerId} {
+      allow get: if isValidId(ledgerId) && isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(ledgerId) && isAdmin() && isValidLedger(incoming()) && incoming().id == ledgerId;
+      allow update, delete: if false;
+    }
+
+    match /settings/{settingId} {
+      allow get: if isValidId(settingId);
+      allow list: if true;
+      allow create, update: if isValidId(settingId) && isAdmin() && isValidSetting(incoming()) && incoming().id == settingId;
+      allow delete: if isValidId(settingId) && isAdmin();
+    }
+
+    match /auditLogs/{logId} {
+      allow get: if isValidId(logId) && isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(logId) && isAdmin() && isValidAuditLog(incoming()) && incoming().id == logId;
+      allow update, delete: if false;
+    }
+
+    match /socEvents/{eventId} {
+      allow get: if isValidId(eventId) && isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isValidId(eventId) && isAdmin() && isValidSocEvent(incoming()) && incoming().id == eventId;
+      allow delete: if isValidId(eventId) && isAdmin();
+    }
+
+    match /socBlockedIps/{ipId} {
+      allow get: if isValidId(ipId) && isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isValidId(ipId) && isAdmin() && isValidSocBlockedIp(incoming()) && incoming().id == ipId;
+      allow delete: if isValidId(ipId) && isAdmin();
+    }
+
+    match /socSettings/{settingId} {
+      allow get: if isValidId(settingId) && isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isValidId(settingId) && isAdmin() && isValidSocPolicy(incoming());
+      allow delete: if isValidId(settingId) && isAdmin();
+    }
+  }
+}

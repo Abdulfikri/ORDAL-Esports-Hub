@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Oswald", sans-serif;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-telemetry: "Space Grotesk", monospace;
+
+  --color-canvas: #0A0C10;
+  --color-raised: #12161F;
+  --color-overlay: #1A202C;
+  --color-cyan-electric: #00F0FF;
+  --color-crimson-aggressive: #FF2E5B;
+  --color-volt-lime: #CCFF00;
+  --color-text-primary: #F8FAFC;
+  --color-text-muted: #94A3B8;
+}
+
+@layer base {
+  html {
+    background-color: #0A0C10;
+    color: #F8FAFC;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    scroll-behavior: smooth;
+    overflow-x: clip;
+  }
+
+  body {
+    background-color: #0A0C10;
+    color: #F8FAFC;
+    overflow-x: clip;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.font-display {
+  font-family: "Oswald", sans-serif;
+}
+
+.font-telemetry {
+  font-family: "Space Grotesk", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ORDAL Tactical Grid Pattern (Brand Guidelines Page 5-6: subtle 25-35% opacity over #0A0C10) */
+.ordal-tactical-grid {
+  background-color: #0A0C10;
+  background-image:
+    linear-gradient(135deg, rgba(255, 46, 91, 0.08) 1px, transparent 1px),
+    linear-gradient(45deg, rgba(0, 240, 255, 0.045) 1px, transparent 1px),
+    radial-gradient(rgba(0, 240, 255, 0.14) 1px, transparent 1px);
+  background-size: 96px 96px, 96px 96px, 48px 48px;
+  background-position: 0 0, 0 0, 24px 24px;
+}
+
+/* Glow & Neon Blooms (DESIGN.md) */
+.glow-cyan {
+  box-shadow: 0 0 18px -2px rgba(0, 240, 255, 0.38);
+}
+
+.glow-crimson {
+  box-shadow: 0 0 12px -2px rgba(255, 46, 91, 0.55);
+}
+
+.glass-shield {
+  background: rgba(18, 22, 31, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Live Match Ticker Marquee */
+@keyframes ticker-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-ticker {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 34s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
+/* Pulsing Aggressive Crimson Live Indicator */
+@keyframes crimson-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 10px 0 rgba(255, 46, 91, 0.85);
+  }
+  50% {
+    opacity: 0.4;
+    box-shadow: 0 0 4px 0 rgba(255, 46, 91, 0.3);
+  }
+}
+
+.live-dot-pulse {
+  animation: crimson-pulse 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ticker {
+    animation: none;
+  }
+  .live-dot-pulse {
+    animation: none;
+  }
+}
+
+/* Custom sharp tactical scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0C10;
+}
+::-webkit-scrollbar-thumb {
+  background: #282A2E;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00F0FF;
+}

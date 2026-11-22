@@ -1,0 +1,576 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Registered ORDAL user profile and RBAC role assignment keyed by Firebase Auth UID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 200
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "role": {
+          "type": "string",
+          "enum": ["TEAM", "CASTER", "LEAGUE_OPS", "SUPER_ADMIN"]
+        },
+        "casterId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "inviteId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "teamProfile": {
+          "type": "object"
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64
+        }
+      },
+      "required": ["uid", "email", "displayName", "role", "createdAt"]
+    },
+    "AdminMarker": {
+      "title": "AdminMarker",
+      "description": "Trusted Super Admin membership marker document keyed by UID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 200
+        },
+        "grantedAt": {
+          "type": "string",
+          "maxLength": 64
+        }
+      },
+      "required": ["uid", "email", "grantedAt"]
+    },
+    "RoleInvite": {
+      "title": "RoleInvite",
+      "description": "Admin-issued invite binding a verified Google email to LEAGUE_OPS, CASTER, or SUPER_ADMIN.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "emailLower": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 200
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "role": {
+          "type": "string",
+          "enum": ["CASTER", "LEAGUE_OPS", "SUPER_ADMIN"]
+        },
+        "casterId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdByUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 64
+        }
+      },
+      "required": ["id", "emailLower", "displayName", "role", "createdByUid", "createdAt"]
+    },
+    "Tournament": {
+      "title": "Tournament",
+      "description": "Competitive esports tournament configuration and live slot tracking.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "game": {
+          "type": "string",
+          "enum": ["POINT BLANK", "FREE FIRE", "EFOOTBALL"]
+        },
+        "format": {
+          "type": "string",
+          "enum": ["SINGLE ELIMINATION", "DOUBLE ELIMINATION"]
+        },
+        "prizePool": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "maxTeams": {
+          "type": "number"
+        },
+        "registeredTeams": {
+          "type": "number"
+        },
+        "startDate": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "region": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "status": {
+          "type": "string",
+          "enum": ["OPEN", "ONGOING", "COMPLETED"]
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 3000
+        },
+        "organizer": { "type": "string", "maxLength": 120 },
+        "registrationFee": { "type": "string", "maxLength": 80 },
+        "mode": { "type": "string", "maxLength": 80 },
+        "checkInInfo": { "type": "string", "maxLength": 300 },
+        "prizeFirst": { "type": "string", "maxLength": 80 },
+        "prizeSecond": { "type": "string", "maxLength": 80 },
+        "prizeThird": { "type": "string", "maxLength": 80 },
+        "prizeMvp": { "type": "string", "maxLength": 80 },
+        "rules": { "type": "string", "maxLength": 6000 },
+        "liveStreamUrl": { "type": "string", "maxLength": 500 },
+        "replayStreamUrl": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["id", "name", "game", "format", "prizePool", "maxTeams", "registeredTeams", "startDate", "region", "status", "description"]
+    },
+    "Match": {
+      "title": "Match",
+      "description": "Tournament bracket match telemetry and score state.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "tournamentId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "game": { "type": "string", "enum": ["POINT BLANK", "FREE FIRE", "EFOOTBALL"] },
+        "round": { "type": "string", "enum": ["QUARTERFINAL", "SEMIFINAL", "GRAND FINAL"] },
+        "bracketOrder": { "type": "number" },
+        "teamA": { "type": "string", "maxLength": 100 },
+        "teamATag": { "type": "string", "maxLength": 16 },
+        "teamB": { "type": "string", "maxLength": 100 },
+        "teamBTag": { "type": "string", "maxLength": 16 },
+        "scoreA": { "type": "number" },
+        "scoreB": { "type": "number" },
+        "mapName": { "type": "string", "maxLength": 80 },
+        "status": { "type": "string", "enum": ["UPCOMING", "LIVE", "FINISHED"] },
+        "winnerTag": { "type": "string", "maxLength": 16 },
+        "nextMatchId": { "type": "string", "maxLength": 128 },
+        "nextMatchSlot": { "type": "string", "enum": ["A", "B"] },
+        "mvpIgn": { "type": "string", "maxLength": 80 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "tournamentId", "game", "round", "bracketOrder", "teamA", "teamATag", "teamB", "teamBTag", "scoreA", "scoreB", "mapName", "status", "updatedAt"]
+    },
+    "Squad": {
+      "title": "Squad",
+      "description": "Public tournament squad registration record without captain contact PII.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "tag": { "type": "string", "minLength": 2, "maxLength": 12 },
+        "tournamentId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "captainIgn": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "roster": { "type": "array" },
+        "seed": { "type": "number" },
+        "checkInStatus": { "type": "string", "enum": ["CHECKED IN", "PENDING", "DISQUALIFIED"] },
+        "registeredAt": { "type": "string", "maxLength": 64 },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" }
+      },
+      "required": ["id", "name", "tag", "tournamentId", "captainIgn", "roster", "seed", "checkInStatus", "registeredAt", "ownerUid"]
+    },
+    "SquadPrivate": {
+      "title": "SquadPrivate",
+      "description": "Isolated captain contact PII for a squad registration.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "squadId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ownerUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "captainContact": { "type": "string", "maxLength": 120 }
+      },
+      "required": ["id", "squadId", "ownerUid", "captainContact"]
+    },
+    "NewsArticle": {
+      "title": "NewsArticle",
+      "description": "ORDAL editorial news article.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "minLength": 3, "maxLength": 200 },
+        "category": { "type": "string", "enum": ["META UPDATE", "ROSTER LEAKS", "TOURNAMENT RECAP", "PATCH NOTES"] },
+        "author": { "type": "string", "maxLength": 100 },
+        "publishedAt": { "type": "string", "maxLength": 64 },
+        "readTime": { "type": "string", "maxLength": 32 },
+        "excerpt": { "type": "string", "maxLength": 500 },
+        "content": { "type": "string", "maxLength": 20000 },
+        "accentTone": { "type": "string", "enum": ["cyan", "crimson", "lime"] },
+        "thumbnailUrl": { "type": "string", "maxLength": 400000 }
+      },
+      "required": ["id", "title", "category", "author", "publishedAt", "readTime", "excerpt", "content", "accentTone"]
+    },
+    "Shoutcaster": {
+      "title": "Shoutcaster",
+      "description": "Public shoutcaster profile, rate card, badges, and day-off schedule.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "name": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "alias": { "type": "string", "maxLength": 60 },
+        "specialtyGames": { "type": "array" },
+        "rateCard": { "type": "number" },
+        "maxMatchesPerDay": { "type": "number" },
+        "dayOffDates": { "type": "array" },
+        "dayOffSlots": { "type": "object" },
+        "bio": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+        "isVerified": { "type": "boolean" },
+        "isTopCaster": { "type": "boolean" },
+        "ownerUid": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "name", "alias", "specialtyGames", "rateCard", "maxMatchesPerDay", "dayOffDates", "bio", "status"]
+    },
+    "ScrimSession": {
+      "title": "ScrimSession",
+      "description": "Public scrim arena booking, lobby rosters, caster assignment, and match score state.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "game": { "type": "string", "enum": ["POINT BLANK", "FREE FIRE", "EFOOTBALL"] },
+        "date": { "type": "string", "maxLength": 32 },
+        "timeSlot": { "type": "string", "maxLength": 32 },
+        "mode": { "type": "string", "enum": ["OPEN_LOBBY", "DIRECT_CHALLENGE"] },
+        "status": { "type": "string", "enum": ["OPEN_LOBBY", "WAITING_APPROVAL", "AWAITING_PAYMENT", "PARTIALLY_PAID", "CONFIRMED", "CANCELLED"] },
+        "casterId": { "type": "string", "maxLength": 128 },
+        "casterName": { "type": "string", "maxLength": 100 },
+        "casterRate": { "type": "number" },
+        "casterApprovalStatus": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED", "NOT_REQUIRED"] },
+        "platformFee": { "type": "number" },
+        "totalCost": { "type": "number" },
+        "splitCostPerTeam": { "type": "number" },
+        "hostUserId": { "type": "string", "maxLength": 128 },
+        "hostTeamName": { "type": "string", "maxLength": 100 },
+        "hostTeamLogo": { "type": "string", "maxLength": 200000 },
+        "hostRosterCore": { "type": "array" },
+        "hostRosterSub": { "type": "array" },
+        "challengerUserId": { "type": "string", "maxLength": 128 },
+        "challengerTeamName": { "type": "string", "maxLength": 100 },
+        "challengerTeamLogo": { "type": "string", "maxLength": 200000 },
+        "challengerRosterCore": { "type": "array" },
+        "challengerRosterSub": { "type": "array" },
+        "challengerApplications": { "type": "array" },
+        "hostPaid": { "type": "boolean" },
+        "challengerPaid": { "type": "boolean" },
+        "paymentDeadlineAt": { "type": "string", "maxLength": 64 },
+        "hostScore": { "type": "number" },
+        "challengerScore": { "type": "number" },
+        "winnerSide": { "type": "string", "enum": ["host", "challenger", "draw"] },
+        "resultRecorded": { "type": "boolean" },
+        "youtubeStreamUrl": { "type": "string", "maxLength": 500 },
+        "rescheduleProposal": { "type": "object" },
+        "refundRequests": { "type": "array" },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "game", "date", "timeSlot", "mode", "status", "casterId", "casterName", "casterRate", "casterApprovalStatus", "platformFee", "totalCost", "splitCostPerTeam", "hostTeamName", "hostTeamLogo", "hostRosterCore", "hostRosterSub", "challengerTeamName", "challengerTeamLogo", "challengerRosterCore", "challengerRosterSub", "hostPaid", "challengerPaid", "createdAt"]
+    },
+    "CasterWithdrawal": {
+      "title": "CasterWithdrawal",
+      "description": "Private caster payout withdrawal request with bank/wallet target.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "casterId": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "casterUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "casterName": { "type": "string", "maxLength": 100 },
+        "amount": { "type": "number" },
+        "bankOrWallet": { "type": "string", "maxLength": 64 },
+        "accountNumber": { "type": "string", "maxLength": 64 },
+        "accountName": { "type": "string", "maxLength": 100 },
+        "note": { "type": "string", "maxLength": 300 },
+        "status": { "type": "string", "enum": ["PENDING", "PAID", "REJECTED"] },
+        "requestedAt": { "type": "string", "maxLength": 64 },
+        "processedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "casterId", "casterUid", "casterName", "amount", "bankOrWallet", "accountNumber", "accountName", "status", "requestedAt"]
+    },
+    "PaymentRecord": {
+      "title": "PaymentRecord",
+      "description": "Private invoice, payment gateway checkout, proof, and validation history record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "invoiceNumber": { "type": "string", "maxLength": 64 },
+        "category": { "type": "string", "enum": ["SCRIM_SPLIT_BILL", "CASTER_PAYOUT", "SCRIM_REFUND"] },
+        "status": { "type": "string", "enum": ["UNPAID", "PENDING_VALIDATION", "VERIFIED", "REJECTED", "EXPIRED"] },
+        "ownerUid": { "type": "string", "maxLength": 128 },
+        "casterUid": { "type": "string", "maxLength": 128 },
+        "scrimId": { "type": "string", "maxLength": 128 },
+        "scrimSide": { "type": "string", "enum": ["host", "challenger"] },
+        "withdrawalId": { "type": "string", "maxLength": 128 },
+        "refundId": { "type": "string", "maxLength": 128 },
+        "casterId": { "type": "string", "maxLength": 128 },
+        "game": { "type": "string", "enum": ["POINT BLANK", "FREE FIRE", "EFOOTBALL"] },
+        "title": { "type": "string", "maxLength": 200 },
+        "payerName": { "type": "string", "maxLength": 120 },
+        "payerEmail": { "type": "string", "maxLength": 200 },
+        "receiverName": { "type": "string", "maxLength": 120 },
+        "amount": { "type": "number" },
+        "baseAmount": { "type": "number" },
+        "gatewayFee": { "type": "number" },
+        "casterFeeShare": { "type": "number" },
+        "platformFeeShare": { "type": "number" },
+        "lineItems": { "type": "array" },
+        "paymentMethod": { "type": "string", "maxLength": 64 },
+        "gatewayProvider": { "type": "string", "maxLength": 64 },
+        "gatewayChannel": { "type": "string", "maxLength": 64 },
+        "gatewayOrderId": { "type": "string", "maxLength": 128 },
+        "vaNumber": { "type": "string", "maxLength": 64 },
+        "qrPayload": { "type": "string", "maxLength": 1000 },
+        "gatewayExpiresAt": { "type": "string", "maxLength": 64 },
+        "idempotencyKey": { "type": "string", "maxLength": 128 },
+        "referenceCode": { "type": "string", "maxLength": 128 },
+        "bankOrWallet": { "type": "string", "maxLength": 64 },
+        "accountNumber": { "type": "string", "maxLength": 64 },
+        "accountName": { "type": "string", "maxLength": 100 },
+        "proofNote": { "type": "string", "maxLength": 500 },
+        "proofImageUrl": { "type": "string", "maxLength": 400000 },
+        "issuedAt": { "type": "string", "maxLength": 64 },
+        "dueAt": { "type": "string", "maxLength": 64 },
+        "submittedAt": { "type": "string", "maxLength": 64 },
+        "validatedAt": { "type": "string", "maxLength": 64 },
+        "validatedBy": { "type": "string", "maxLength": 120 },
+        "validationNote": { "type": "string", "maxLength": 500 },
+        "history": { "type": "array" }
+      },
+      "required": ["id", "invoiceNumber", "category", "status", "title", "payerName", "receiverName", "amount", "lineItems", "issuedAt", "history"]
+    },
+    "SettlementLedgerEntry": {
+      "title": "SettlementLedgerEntry",
+      "description": "Double-entry accounting ledger entry for escrow, caster payable, and platform revenue.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "paymentId": { "type": "string", "maxLength": 128 },
+        "invoiceNumber": { "type": "string", "maxLength": 64 },
+        "accountBucket": { "type": "string", "enum": ["ESCROW_TEAM", "CASTER_PAYABLE", "PLATFORM_REVENUE", "PG_FEE_EXPENSE", "REFUND_PAYABLE"] },
+        "direction": { "type": "string", "enum": ["CREDIT", "DEBIT"] },
+        "amount": { "type": "number" },
+        "description": { "type": "string", "maxLength": 400 },
+        "actorEmail": { "type": "string", "maxLength": 200 },
+        "scrimId": { "type": "string", "maxLength": 128 },
+        "casterId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "timestamp", "paymentId", "invoiceNumber", "accountBucket", "direction", "amount", "description"]
+    },
+    "AppSetting": {
+      "title": "AppSetting",
+      "description": "Platform configuration document (hero, brand, scrim, seedMeta).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "payload": { "type": "object" },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "payload", "updatedAt"]
+    },
+    "AuditLogEntry": {
+      "title": "AuditLogEntry",
+      "description": "Immutable tamper-evident hash-chained audit trail record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "actorId": { "type": "string", "maxLength": 128 },
+        "actorEmail": { "type": "string", "maxLength": 200 },
+        "actorName": { "type": "string", "maxLength": 120 },
+        "resource": { "type": "string", "enum": ["TOURNAMENT", "MATCH", "SQUAD", "HERO", "BRAND", "PAYMENT", "CASTER", "USER"] },
+        "action": { "type": "string", "enum": ["CREATE", "UPDATE", "DELETE", "GENERATE_BRACKET"] },
+        "targetId": { "type": "string", "maxLength": 128 },
+        "targetLabel": { "type": "string", "maxLength": 200 },
+        "summary": { "type": "string", "maxLength": 600 },
+        "changedFields": { "type": "array" },
+        "prevHash": { "type": "string", "maxLength": 128 },
+        "entryHash": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "timestamp", "actorId", "actorEmail", "actorName", "resource", "action", "targetId", "targetLabel", "summary"]
+    },
+    "SocEvent": {
+      "title": "SocEvent",
+      "description": "Super Admin SOC security event log entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "timestamp": { "type": "string", "maxLength": 64 },
+        "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "category": { "type": "string", "enum": ["WAF_BLOCK", "BRUTE_FORCE", "AUTH_FAILURE", "RBAC_VIOLATION", "RATE_LIMIT", "IP_BLOCKED", "POLICY_CHANGE", "SESSION_REVOKED", "SESSION_HIJACK"] },
+        "ip": { "type": "string", "maxLength": 64 },
+        "method": { "type": "string", "maxLength": 16 },
+        "path": { "type": "string", "maxLength": 240 },
+        "actorEmail": { "type": "string", "maxLength": 200 },
+        "actorRole": { "type": "string", "enum": ["TEAM", "CASTER", "LEAGUE_OPS", "SUPER_ADMIN"] },
+        "userAgent": { "type": "string", "maxLength": 400 },
+        "summary": { "type": "string", "maxLength": 400 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["OPEN", "ACKNOWLEDGED", "RESOLVED"] }
+      },
+      "required": ["id", "timestamp", "severity", "category", "ip", "method", "path", "summary", "status"]
+    },
+    "SocBlockedIp": {
+      "title": "SocBlockedIp",
+      "description": "Blocked IP entry managed by Super Admin SOC.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "ip": { "type": "string", "maxLength": 64 },
+        "reason": { "type": "string", "maxLength": 300 },
+        "blockedAt": { "type": "string", "maxLength": 64 },
+        "expiresAt": { "type": "string", "maxLength": 64 },
+        "blockedBy": { "type": "string", "maxLength": 120 },
+        "autoBlocked": { "type": "boolean" },
+        "hits": { "type": "number" }
+      },
+      "required": ["id", "ip", "reason", "blockedAt", "blockedBy", "autoBlocked", "hits"]
+    },
+    "SocPolicyDoc": {
+      "title": "SocPolicyDoc",
+      "description": "SOC security policy flags managed by Super Admin.",
+      "type": "object",
+      "properties": {
+        "wafEnabled": { "type": "boolean" },
+        "autoBlockEnabled": { "type": "boolean" },
+        "bruteForceThreshold": { "type": "number" },
+        "autoBlockDurationMinutes": { "type": "number" },
+        "strictApiHeaders": { "type": "boolean" },
+        "alertOnRbacViolation": { "type": "boolean" }
+      },
+      "required": ["wafEnabled", "autoBlockEnabled", "bruteForceThreshold", "autoBlockDurationMinutes", "strictApiHeaders", "alertOnRbacViolation"]
+    },
+    "ConnectionCheck": {
+      "title": "ConnectionCheck",
+      "description": "Read-only connection verification document.",
+      "type": "object",
+      "properties": {
+        "ok": { "type": "boolean" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User profiles keyed by Firebase UID; strict owner/admin PII isolation."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminMarker" },
+      "description": "Trusted Super Admin membership markers keyed by Firebase UID."
+    },
+    "/roleInvites/{inviteId}": {
+      "schema": { "$ref": "#/entities/RoleInvite" },
+      "description": "Admin-managed role invitations for CASTER, LEAGUE_OPS, and SUPER_ADMIN."
+    },
+    "/tournaments/{tournamentId}": {
+      "schema": { "$ref": "#/entities/Tournament" },
+      "description": "Public tournament catalog and slot counters."
+    },
+    "/matches/{matchId}": {
+      "schema": { "$ref": "#/entities/Match" },
+      "description": "Public tournament bracket matches and live telemetry."
+    },
+    "/squads/{squadId}": {
+      "schema": { "$ref": "#/entities/Squad" },
+      "description": "Public squad tournament entries without captain contact PII."
+    },
+    "/squadsPrivate/{squadId}": {
+      "schema": { "$ref": "#/entities/SquadPrivate" },
+      "description": "Private captain contact details isolated to squad owner, League Ops, and Super Admin."
+    },
+    "/news/{newsId}": {
+      "schema": { "$ref": "#/entities/NewsArticle" },
+      "description": "Public editorial news articles."
+    },
+    "/casters/{casterId}": {
+      "schema": { "$ref": "#/entities/Shoutcaster" },
+      "description": "Public shoutcaster directory, rate cards, and schedules."
+    },
+    "/scrims/{scrimId}": {
+      "schema": { "$ref": "#/entities/ScrimSession" },
+      "description": "Public scrim lobbies, bookings, rosters, and match results without email PII."
+    },
+    "/withdrawals/{withdrawalId}": {
+      "schema": { "$ref": "#/entities/CasterWithdrawal" },
+      "description": "Private caster payout withdrawal requests."
+    },
+    "/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/PaymentRecord" },
+      "description": "Private scrim split-bill invoices, proofs, and payouts."
+    },
+    "/ledger/{ledgerId}": {
+      "schema": { "$ref": "#/entities/SettlementLedgerEntry" },
+      "description": "Double-entry settlement ledger restricted to Super Admin."
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/AppSetting" },
+      "description": "Public platform configuration documents (hero, brand, scrim, seedMeta)."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLogEntry" },
+      "description": "Immutable Super Admin audit log trail."
+    },
+    "/socEvents/{eventId}": {
+      "schema": { "$ref": "#/entities/SocEvent" },
+      "description": "SOC security telemetry events restricted to Super Admin."
+    },
+    "/socBlockedIps/{ipId}": {
+      "schema": { "$ref": "#/entities/SocBlockedIp" },
+      "description": "SOC blocked IP registry restricted to Super Admin."
+    },
+    "/socSettings/{settingId}": {
+      "schema": { "$ref": "#/entities/SocPolicyDoc" },
+      "description": "SOC policy settings restricted to Super Admin."
+    },
+    "/test/{docId}": {
+      "schema": { "$ref": "#/entities/ConnectionCheck" },
+      "description": "Health check document for initial Firestore connection validation."
+    }
+  }
+}
