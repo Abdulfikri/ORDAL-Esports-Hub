@@ -5,6 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 # Fallback SPA agar path langsung & hash routing (#team, #caster, #league-ops, #admin, #login) tetap melayani index.html
 [[redirects]]
