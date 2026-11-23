@@ -13,6 +13,7 @@ import {
   recordLastActivityAt,
   SESSION_EXPIRED_EVENT,
 } from './api';
+import { AUTH_USER_UPDATED_EVENT } from './lib/firestoreStore';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AuthGate, type TeamAuthPrefill } from './components/AuthGate';
 import {
@@ -77,6 +78,17 @@ export default function App() {
   useEffect(() => {
     currentUserRef.current = currentUser;
   }, [currentUser]);
+
+  useEffect(() => {
+    const handleAuthUserUpdated = (e: Event) => {
+      const nextUser = (e as CustomEvent<AuthUser>)?.detail;
+      if (nextUser) {
+        setCurrentUser(nextUser);
+      }
+    };
+    window.addEventListener(AUTH_USER_UPDATED_EVENT, handleAuthUserUpdated);
+    return () => window.removeEventListener(AUTH_USER_UPDATED_EVENT, handleAuthUserUpdated);
+  }, []);
 
   const dismissToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((item) => item.id !== id));

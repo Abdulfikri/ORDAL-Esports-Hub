@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { api } from '../api';
+import { compressImageDataUrl } from '../lib/imageUpload';
 import type { AuthUser, Match, OrdalDatabase, ScrimGame, ScrimSession, Tournament } from '../types';
 import { OrdalMonogram } from './BrandAssets';
 import { MatchDetailModal, RegisterSquadModal } from './Modals';
@@ -162,6 +163,18 @@ export const TeamDashboard: React.FC<TeamDashboardProps> = ({
   const [newSubPlayer, setNewSubPlayer] = useState('');
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (!profile) return;
+    setTeamName(profile.teamName || user.displayName);
+    setTeamTag(profile.teamTag || 'TEAM');
+    setTeamLogo(profile.teamLogo || '');
+    setPrimaryGame(profile.primaryGame || 'POINT BLANK');
+    setCaptainIgn(profile.captainIgn || '');
+    setCaptainContact(profile.captainContact || '');
+    setRosterCore(profile.rosterCore || []);
+    setRosterSub(profile.rosterSub || []);
+  }, [user.id, user.displayName, profile]);
+
   const normalizedName = (profile?.teamName || teamName).trim().toUpperCase();
 
   const myScrims = useMemo(
@@ -271,13 +284,14 @@ export const TeamDashboard: React.FC<TeamDashboardProps> = ({
     }
   };
 
-  const handleUploadLogo = (file: File | undefined) => {
+  const handleUploadLogo = async (file: File | undefined) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') setTeamLogo(reader.result);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const dataUrl = await compressImageDataUrl(file);
+      setTeamLogo(dataUrl);
+    } catch {
+      onNotify('Gagal memproses file logo tim.');
+    }
   };
 
   const handleAddCore = () => {

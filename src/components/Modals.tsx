@@ -201,6 +201,15 @@ export const RegisterSquadModal: React.FC<RegisterSquadModalProps> = ({
   const [error, setError] = useState('');
   const [captchaToken, setCaptchaToken] = useState('');
   const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
+  const [editingSquadFields, setEditingSquadFields] = useState(false);
+
+  const hasSyncedProfileRoster = Boolean(
+    teamProfile &&
+      teamProfile.teamName.trim() &&
+      teamProfile.teamTag.trim() &&
+      teamProfile.captainIgn.trim() &&
+      teamProfile.rosterCore.length > 0
+  );
 
   useEscapeKey(isOpen && !submitting, onClose);
 
@@ -216,15 +225,19 @@ export const RegisterSquadModal: React.FC<RegisterSquadModalProps> = ({
   }, [defaultTournamentId, scopedTournaments, openTournaments, tournamentId]);
 
   React.useEffect(() => {
-    if (isOpen && teamProfile) {
+    if (!isOpen) return;
+    if (teamProfile) {
       setName(teamProfile.teamName);
       setTag(teamProfile.teamTag);
       setCaptainIgn(teamProfile.captainIgn);
       setCaptainContact(teamProfile.captainContact);
       const combinedRoster = [...teamProfile.rosterCore, ...teamProfile.rosterSub];
       setRosterInput(combinedRoster.join(', '));
+      setEditingSquadFields(!hasSyncedProfileRoster);
+    } else {
+      setEditingSquadFields(true);
     }
-  }, [isOpen, teamProfile]);
+  }, [isOpen, teamProfile, hasSyncedProfileRoster]);
 
   if (!isOpen) return null;
 
@@ -278,11 +291,13 @@ export const RegisterSquadModal: React.FC<RegisterSquadModalProps> = ({
         roster: finalRoster,
         ...(captchaToken ? { captchaToken } : {}),
       });
-      setName('');
-      setTag('');
-      setCaptainIgn('');
-      setCaptainContact('');
-      setRosterInput('');
+      if (!teamProfile) {
+        setName('');
+        setTag('');
+        setCaptainIgn('');
+        setCaptainContact('');
+        setRosterInput('');
+      }
       setCaptchaToken('');
       onClose();
     } catch (err) {
@@ -394,78 +409,136 @@ export const RegisterSquadModal: React.FC<RegisterSquadModalProps> = ({
             ) : null}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
-                Nama Squad
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Contoh: GARUDA ESPORTS"
-                className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
-              />
+          {hasSyncedProfileRoster && !editingSquadFields ? (
+            <div className="p-4 bg-[#0A0C10] border border-[#00F0FF]/30 rounded-[6px] space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-telemetry text-[10px] font-bold uppercase tracking-[0.08em] text-[#CCFF00]">
+                    TERISI OTOMATIS DARI PROFIL TIM
+                  </div>
+                  <div className="mt-1 font-display text-lg font-bold uppercase text-[#F8FAFC] truncate">
+                    [{tag}] {name}
+                  </div>
+                  <div className="mt-0.5 font-telemetry text-xs text-[#94A3B8]">
+                    Kapten: <span className="text-[#F8FAFC]">{captainIgn}</span>
+                    {captainContact ? ` · ${captainContact}` : ''}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingSquadFields(true)}
+                  className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 rounded-[4px] font-telemetry text-[11px] font-semibold uppercase text-[#00F0FF] cursor-pointer whitespace-nowrap"
+                >
+                  Ubah Roster
+                </button>
+              </div>
+              <div className="pt-2 border-t border-white/[0.06]">
+                <div className="font-telemetry text-[10px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
+                  Roster Terdaftar ({parsedRoster.length} Pemain)
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {parsedRoster.map((player, idx) => (
+                    <span
+                      key={`${player}-${idx}`}
+                      className="px-2 py-1 bg-[#12161F] border border-white/10 rounded-[3px] font-telemetry text-[11px] text-[#E2E2E8]"
+                    >
+                      {player}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
-                Tag (3-5 Huruf)
-              </label>
-              <input
-                type="text"
-                maxLength={5}
-                value={tag}
-                onChange={(e) => setTag(e.target.value.toUpperCase())}
-                placeholder="GRD"
-                className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm uppercase text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
-              />
-            </div>
-          </div>
+          ) : (
+            <>
+              {hasSyncedProfileRoster && (
+                <div className="flex items-center justify-between gap-2 px-3 py-2 bg-[#0A0C10] border border-white/10 rounded-[4px]">
+                  <span className="font-telemetry text-[11px] text-[#94A3B8]">
+                    Perubahan roster di sini otomatis ikut memperbarui Profil Tim Anda.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setEditingSquadFields(false)}
+                    className="font-telemetry text-[11px] font-bold uppercase text-[#00F0FF] hover:underline cursor-pointer whitespace-nowrap"
+                  >
+                    Ringkas
+                  </button>
+                </div>
+              )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
-                Nickname / ID In-Game Kapten
-              </label>
-              <input
-                type="text"
-                value={captainIgn}
-                onChange={(e) => setCaptainIgn(e.target.value)}
-                placeholder="GRD_Kael / ID 102938"
-                className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
-              />
-            </div>
-            <div>
-              <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
-                Kontak WhatsApp / Discord
-              </label>
-              <input
-                type="text"
-                value={captainContact}
-                onChange={(e) => setCaptainContact(e.target.value)}
-                placeholder="0812xxxx / discord: kael.grd"
-                className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
+                    Nama Squad
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Contoh: GARUDA ESPORTS"
+                    className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
+                    Tag (3-5 Huruf)
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={5}
+                    value={tag}
+                    onChange={(e) => setTag(e.target.value.toUpperCase())}
+                    placeholder="GRD"
+                    className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm uppercase text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
+                  />
+                </div>
+              </div>
 
-          <div>
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
-                Daftar Pemain (Pisahkan dengan koma)
-              </label>
-              <span className="font-telemetry text-[11px] font-bold text-[#00F0FF] tabular-nums">
-                {parsedRoster.length > 0 ? `${parsedRoster.length} pemain terisi` : 'Opsional jika 1v1'}
-              </span>
-            </div>
-            <textarea
-              rows={2}
-              value={rosterInput}
-              onChange={(e) => setRosterInput(e.target.value)}
-              placeholder="GRD_Kael, GRD_Raka, GRD_Nox, GRD_Vyn, GRD_Zed"
-              className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
-            />
-          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
+                    Nickname / ID In-Game Kapten
+                  </label>
+                  <input
+                    type="text"
+                    value={captainIgn}
+                    onChange={(e) => setCaptainIgn(e.target.value)}
+                    placeholder="GRD_Kael / ID 102938"
+                    className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
+                    Kontak WhatsApp / Discord
+                  </label>
+                  <input
+                    type="text"
+                    value={captainContact}
+                    onChange={(e) => setCaptainContact(e.target.value)}
+                    placeholder="0812xxxx / discord: kael.grd"
+                    className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <label className="block font-telemetry text-xs font-semibold uppercase tracking-[0.08em] text-[#94A3B8]">
+                    Daftar Pemain (Pisahkan dengan koma)
+                  </label>
+                  <span className="font-telemetry text-[11px] font-bold text-[#00F0FF] tabular-nums">
+                    {parsedRoster.length > 0 ? `${parsedRoster.length} pemain terisi` : 'Opsional jika 1v1'}
+                  </span>
+                </div>
+                <textarea
+                  rows={2}
+                  value={rosterInput}
+                  onChange={(e) => setRosterInput(e.target.value)}
+                  placeholder="GRD_Kael, GRD_Raka, GRD_Nox, GRD_Vyn, GRD_Zed"
+                  className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
+                />
+              </div>
+            </>
+          )}
 
           <TurnstileWidget onToken={setCaptchaToken} resetSignal={captchaResetSignal} />
 

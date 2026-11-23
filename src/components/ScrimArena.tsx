@@ -24,6 +24,7 @@ import {
 import QRCode from 'qrcode';
 import { api } from '../api';
 import { useEscapeKey } from '../hooks/useEscapeKey';
+import { compressImageDataUrl } from '../lib/imageUpload';
 import type {
   AuthUser,
   GatewayChannel,
@@ -193,6 +194,14 @@ export const ScrimArena: React.FC<ScrimArenaProps> = ({
 
   // Roster Inspector Modal
   const [inspectScrim, setInspectScrim] = useState<ScrimSession | null>(null);
+  const hasSyncedTeamProfile = Boolean(
+    currentUser?.role === 'TEAM' &&
+      teamProfile &&
+      teamProfile.teamName.trim() &&
+      teamProfile.rosterCore.length > 0
+  );
+  const [editingHostRoster, setEditingHostRoster] = useState(!hasSyncedTeamProfile);
+  const [editingChRoster, setEditingChRoster] = useState(!hasSyncedTeamProfile);
 
   useEscapeKey(
     Boolean(checkoutTarget || refundTarget || rescheduleTarget || inspectScrim || challengeTarget),
@@ -220,8 +229,10 @@ export const ScrimArena: React.FC<ScrimArenaProps> = ({
       setHostRosterSub(teamProfile.rosterSub.join(', '));
       setGame(teamProfile.primaryGame);
       setGameFilter(teamProfile.primaryGame);
+      setEditingHostRoster(teamProfile.rosterCore.length === 0);
     } else {
       setGameFilter('ALL');
+      setEditingHostRoster(true);
     }
   }, [currentUser?.id, teamProfile]);
 
@@ -231,6 +242,9 @@ export const ScrimArena: React.FC<ScrimArenaProps> = ({
       setChTeamLogo(teamProfile.teamLogo);
       setChRosterCore(teamProfile.rosterCore.join(', '));
       setChRosterSub(teamProfile.rosterSub.join(', '));
+      setEditingChRoster(teamProfile.rosterCore.length === 0);
+    } else if (challengeTarget) {
+      setEditingChRoster(true);
     }
   }, [challengeTarget, teamProfile]);
 
@@ -357,11 +371,11 @@ export const ScrimArena: React.FC<ScrimArenaProps> = ({
 
   const readImageFile = (file: File | undefined, cb: (dataUrl: string) => void) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') cb(reader.result);
-    };
-    reader.readAsDataURL(file);
+    compressImageDataUrl(file)
+      .then((dataUrl) => cb(dataUrl))
+      .catch(() => {
+        onNotify('Gagal memproses file logo tim.');
+      });
   };
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
@@ -425,10 +439,12 @@ export const ScrimArena: React.FC<ScrimArenaProps> = ({
             : [],
       });
       await onRefresh();
-      setHostTeamName('');
-      setHostTeamLogo('');
-      setHostRosterCore('');
-      setHostRosterSub('');
+      if (!teamProfile) {
+        setHostTeamName('');
+        setHostTeamLogo('');
+        setHostRosterCore('');
+        setHostRosterSub('');
+      }
       setDirectTeamName('');
       setDirectTeamLogo('');
       setDirectRosterCore('');
@@ -468,10 +484,12 @@ export const ScrimArena: React.FC<ScrimArenaProps> = ({
         `Pengajuan scrim dari ${chTeamName.toUpperCase()} terkirim! Menunggu pilihan Team Leader ${challengeTarget.hostTeamName}.`
       );
       setChallengeTarget(null);
-      setChTeamName('');
-      setChTeamLogo('');
-      setChRosterCore('');
-      setChRosterSub('');
+      if (!teamProfile) {
+        setChTeamName('');
+        setChTeamLogo('');
+        setChRosterCore('');
+        setChRosterSub('');
+      }
       setChNote('');
     } catch (err) {
       onNotify(err instanceof Error ? err.message : 'Gagal mengirim pengajuan scrim.');
@@ -904,67 +922,139 @@ export const ScrimArena: React.FC<ScrimArenaProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* Host Team Info */}
               <div className="lg:col-span-6 space-y-4">
-                <div className="font-telemetry text-xs font-bold uppercase tracking-[0.08em] text-[#00F0FF]">
-                  Informasi Tim Host (Tim A)
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-telemetry text-xs font-bold uppercase tracking-[0.08em] text-[#00F0FF]">
+                    Informasi Tim Host (Tim A)
+                  </div>
+                  {hasSyncedTeamProfile && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingHostRoster((prev) => !prev)}
+                      className="font-telemetry text-[11px] font-bold uppercase text-[#00F0FF] hover:underline cursor-pointer"
+                    >
+                      {editingHostRoster ? 'Gunakan Ringkasan Profil' : 'Ubah Roster / Logo'}
+                    </button>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="sm:col-span-2">
-                    <label className="block font-telemetry text-[11px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
-                      Nama Tim
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={hostTeamName}
-                      onChange={(e) => setHostTeamName(e.target.value)}
-                      placeholder="Contoh: ORDAL VANGUARD"
-                      className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
-                    />
+                {hasSyncedTeamProfile && !editingHostRoster ? (
+                  <div className="p-4 bg-[#0A0C10] border border-[#00F0FF]/30 rounded-[6px] space-y-3">
+                    <div className="flex items-center gap-3">
+                      <TeamAvatar name={hostTeamName} logo={hostTeamLogo} />
+                      <div className="min-w-0">
+                        <div className="font-telemetry text-[10px] font-bold uppercase tracking-[0.08em] text-[#CCFF00]">
+                          TERSINKRON DARI PROFIL TIM
+                        </div>
+                        <div className="font-display text-lg font-bold uppercase text-[#F8FAFC] truncate">
+                          {hostTeamName}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-white/[0.06] space-y-2">
+                      <div>
+                        <div className="font-telemetry text-[10px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1">
+                          Roster Inti
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {hostRosterCore
+                            .split(',')
+                            .map((s) => s.trim())
+                            .filter(Boolean)
+                            .map((p, idx) => (
+                              <span
+                                key={`sync-core-${idx}`}
+                                className="px-2 py-1 bg-[#12161F] border border-white/10 rounded-[3px] font-telemetry text-[11px] text-[#E2E2E8]"
+                              >
+                                {p}
+                              </span>
+                            ))}
+                        </div>
+                      </div>
+                      {hostRosterSub.trim() && (
+                        <div>
+                          <div className="font-telemetry text-[10px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1">
+                            Roster Cadangan
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {hostRosterSub
+                              .split(',')
+                              .map((s) => s.trim())
+                              .filter(Boolean)
+                              .map((p, idx) => (
+                                <span
+                                  key={`sync-sub-${idx}`}
+                                  className="px-2 py-1 bg-[#12161F] border border-white/10 rounded-[3px] font-telemetry text-[11px] text-[#94A3B8]"
+                                >
+                                  {p}
+                                </span>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <label className="block font-telemetry text-[11px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
-                      Logo Tim
-                    </label>
-                    <label className="w-full min-h-[42px] px-3 py-2 bg-[#0A0C10] border border-white/15 hover:border-[#00F0FF] rounded-[4px] flex items-center justify-center gap-1.5 font-telemetry text-xs text-[#F8FAFC] cursor-pointer">
-                      <Upload className="w-3.5 h-3.5 text-[#00F0FF]" />
-                      <span className="truncate">{hostTeamLogo ? 'Logo Siap' : 'Upload'}</span>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2">
+                        <label className="block font-telemetry text-[11px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
+                          Nama Tim
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={hostTeamName}
+                          onChange={(e) => setHostTeamName(e.target.value)}
+                          placeholder="Contoh: ORDAL VANGUARD"
+                          className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-telemetry text-[11px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
+                          Logo Tim
+                        </label>
+                        <label className="w-full min-h-[42px] px-3 py-2 bg-[#0A0C10] border border-white/15 hover:border-[#00F0FF] rounded-[4px] flex items-center justify-center gap-1.5 font-telemetry text-xs text-[#F8FAFC] cursor-pointer">
+                          <Upload className="w-3.5 h-3.5 text-[#00F0FF]" />
+                          <span className="truncate">{hostTeamLogo ? 'Logo Siap' : 'Upload'}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => readImageFile(e.target.files?.[0], setHostTeamLogo)}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-telemetry text-[11px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
+                        Roster Inti (IGN &amp; ID, pisahkan koma)
+                      </label>
                       <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => readImageFile(e.target.files?.[0], setHostTeamLogo)}
-                        className="hidden"
+                        type="text"
+                        required
+                        value={hostRosterCore}
+                        onChange={(e) => setHostRosterCore(e.target.value)}
+                        placeholder="ORD_Kuroi#01, ORD_Fikri#29, ORD_Zane#88, ORD_Ryu#12, ORD_Mika#04"
+                        className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
                       />
-                    </label>
-                  </div>
-                </div>
+                    </div>
 
-                <div>
-                  <label className="block font-telemetry text-[11px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
-                    Roster Inti (IGN &amp; ID, pisahkan koma)
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={hostRosterCore}
-                    onChange={(e) => setHostRosterCore(e.target.value)}
-                    placeholder="ORD_Kuroi#01, ORD_Fikri#29, ORD_Zane#88, ORD_Ryu#12, ORD_Mika#04"
-                    className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-telemetry text-[11px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
-                    Roster Cadangan (Opsional)
-                  </label>
-                  <input
-                    type="text"
-                    value={hostRosterSub}
-                    onChange={(e) => setHostRosterSub(e.target.value)}
-                    placeholder="ORD_Seno#99"
-                    className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
-                  />
-                </div>
+                    <div>
+                      <label className="block font-telemetry text-[11px] uppercase tracking-[0.08em] text-[#94A3B8] mb-1.5">
+                        Roster Cadangan (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        value={hostRosterSub}
+                        onChange={(e) => setHostRosterSub(e.target.value)}
+                        placeholder="ORD_Seno#99"
+                        className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] placeholder:text-[#94A3B8]/50 focus:outline-none focus:border-[#00F0FF]"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Session & Caster Settings */}
@@ -1962,61 +2052,134 @@ export const ScrimArena: React.FC<ScrimArenaProps> = ({
             </div>
 
             <form onSubmit={handleChallengeSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block font-telemetry text-xs uppercase text-[#94A3B8] mb-1.5">
-                    Nama Tim Penantang
-                  </label>
-                  <input
-                    required
-                    value={chTeamName}
-                    onChange={(e) => setChTeamName(e.target.value)}
-                    placeholder="Contoh: SPECTRE ELITE"
-                    className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] focus:outline-none focus:border-[#00F0FF]"
-                  />
+              {hasSyncedTeamProfile && !editingChRoster ? (
+                <div className="p-4 bg-[#0A0C10] border border-[#00F0FF]/30 rounded-[6px] space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <TeamAvatar name={chTeamName} logo={chTeamLogo} />
+                      <div className="min-w-0">
+                        <div className="font-telemetry text-[10px] font-bold uppercase tracking-[0.08em] text-[#CCFF00]">
+                          TERSINKRON DARI PROFIL TIM
+                        </div>
+                        <div className="font-display text-lg font-bold uppercase text-[#F8FAFC] truncate">
+                          {chTeamName}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditingChRoster(true)}
+                      className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/15 rounded-[4px] font-telemetry text-[11px] font-semibold uppercase text-[#00F0FF] cursor-pointer whitespace-nowrap"
+                    >
+                      Ubah Roster
+                    </button>
+                  </div>
+                  <div className="pt-2 border-t border-white/[0.06] space-y-1.5">
+                    <div className="font-telemetry text-[10px] uppercase tracking-[0.08em] text-[#94A3B8]">
+                      Roster Inti &amp; Cadangan
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {chRosterCore
+                        .split(',')
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                        .map((p, idx) => (
+                          <span
+                            key={`ch-sync-core-${idx}`}
+                            className="px-2 py-1 bg-[#12161F] border border-white/10 rounded-[3px] font-telemetry text-[11px] text-[#E2E2E8]"
+                          >
+                            {p}
+                          </span>
+                        ))}
+                      {chRosterSub
+                        .split(',')
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                        .map((p, idx) => (
+                          <span
+                            key={`ch-sync-sub-${idx}`}
+                            className="px-2 py-1 bg-[#12161F] border border-white/10 rounded-[3px] font-telemetry text-[11px] text-[#94A3B8]"
+                          >
+                            SUB: {p}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block font-telemetry text-xs uppercase text-[#94A3B8] mb-1.5">
-                    Logo Tim
-                  </label>
-                  <label className="w-full min-h-[42px] px-3 py-2 bg-[#0A0C10] border border-white/15 hover:border-[#00F0FF] rounded-[4px] flex items-center justify-center gap-1.5 font-telemetry text-xs text-[#F8FAFC] cursor-pointer">
-                    <Upload className="w-3.5 h-3.5 text-[#00F0FF]" />
-                    <span>{chTeamLogo ? 'Siap' : 'Upload'}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => readImageFile(e.target.files?.[0], setChTeamLogo)}
-                      className="hidden"
+              ) : (
+                <>
+                  {hasSyncedTeamProfile && (
+                    <div className="flex items-center justify-between gap-2 px-3 py-2 bg-[#0A0C10] border border-white/10 rounded-[4px]">
+                      <span className="font-telemetry text-[11px] text-[#94A3B8]">
+                        Perubahan di sini otomatis ikut memperbarui Profil Tim Anda.
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setEditingChRoster(false)}
+                        className="font-telemetry text-[11px] font-bold uppercase text-[#00F0FF] hover:underline cursor-pointer whitespace-nowrap"
+                      >
+                        Ringkas
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-2">
+                      <label className="block font-telemetry text-xs uppercase text-[#94A3B8] mb-1.5">
+                        Nama Tim Penantang
+                      </label>
+                      <input
+                        required
+                        value={chTeamName}
+                        onChange={(e) => setChTeamName(e.target.value)}
+                        placeholder="Contoh: SPECTRE ELITE"
+                        className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] focus:outline-none focus:border-[#00F0FF]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-telemetry text-xs uppercase text-[#94A3B8] mb-1.5">
+                        Logo Tim
+                      </label>
+                      <label className="w-full min-h-[42px] px-3 py-2 bg-[#0A0C10] border border-white/15 hover:border-[#00F0FF] rounded-[4px] flex items-center justify-center gap-1.5 font-telemetry text-xs text-[#F8FAFC] cursor-pointer">
+                        <Upload className="w-3.5 h-3.5 text-[#00F0FF]" />
+                        <span>{chTeamLogo ? 'Siap' : 'Upload'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => readImageFile(e.target.files?.[0], setChTeamLogo)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-telemetry text-xs uppercase text-[#94A3B8] mb-1.5">
+                      Roster Inti (IGN &amp; ID, pisahkan koma)
+                    </label>
+                    <textarea
+                      rows={2}
+                      required
+                      value={chRosterCore}
+                      onChange={(e) => setChRosterCore(e.target.value)}
+                      placeholder="SPCT_Kael#01, SPCT_Raka#02, SPCT_Nox#03, SPCT_Vyn#04, SPCT_Zed#05"
+                      className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] focus:outline-none focus:border-[#00F0FF]"
                     />
-                  </label>
-                </div>
-              </div>
+                  </div>
 
-              <div>
-                <label className="block font-telemetry text-xs uppercase text-[#94A3B8] mb-1.5">
-                  Roster Inti (IGN &amp; ID, pisahkan koma)
-                </label>
-                <textarea
-                  rows={2}
-                  required
-                  value={chRosterCore}
-                  onChange={(e) => setChRosterCore(e.target.value)}
-                  placeholder="SPCT_Kael#01, SPCT_Raka#02, SPCT_Nox#03, SPCT_Vyn#04, SPCT_Zed#05"
-                  className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] focus:outline-none focus:border-[#00F0FF]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-telemetry text-xs uppercase text-[#94A3B8] mb-1.5">
-                  Roster Cadangan (Opsional)
-                </label>
-                <input
-                  value={chRosterSub}
-                  onChange={(e) => setChRosterSub(e.target.value)}
-                  placeholder="SPCT_Rio#09"
-                  className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] focus:outline-none focus:border-[#00F0FF]"
-                />
-              </div>
+                  <div>
+                    <label className="block font-telemetry text-xs uppercase text-[#94A3B8] mb-1.5">
+                      Roster Cadangan (Opsional)
+                    </label>
+                    <input
+                      value={chRosterSub}
+                      onChange={(e) => setChRosterSub(e.target.value)}
+                      placeholder="SPCT_Rio#09"
+                      className="w-full px-3.5 py-2.5 bg-[#0A0C10] border border-white/12 rounded-[4px] font-telemetry text-sm text-[#F8FAFC] focus:outline-none focus:border-[#00F0FF]"
+                    />
+                  </div>
+                </>
+              )}
 
               <div>
                 <label className="block font-telemetry text-xs uppercase text-[#94A3B8] mb-1.5">

@@ -146,7 +146,111 @@ async function waitForInitialAuth(): Promise<User | null> {
   });
 }
 
+export const AUTH_USER_UPDATED_EVENT = 'ordal:auth-user-updated';
+
 let cachedAuthUser: AuthUser | null = null;
+
+function emitAuthUserUpdated(user: AuthUser) {
+  cachedAuthUser = user;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent<AuthUser>(AUTH_USER_UPDATED_EVENT, { detail: user }));
+  }
+}
+
+function deriveTeamTag(name: string, fallback = 'TEAM'): string {
+  const words = name
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+  if (words.length >= 2) {
+    return words.map((w) => w[0]).join('').slice(0, 5) || fallback;
+  }
+  const compact = words[0] || '';
+  return compact.slice(0, 5) || fallback;
+}
+
+async function syncTeamProfileForTeamUser(
+  user: AuthUser,
+  patch: Partial<TeamProfile>
+): Promise<AuthUser> {
+  if (user.role !== 'TEAM') return user;
+  const uid = auth.currentUser?.uid || user.id;
+  const current = user.teamProfile;
+  const nextTeamName = (
+    String(patch.teamName ?? current?.teamName ?? user.displayName ?? 'TEAM ORDAL').trim() ||
+    'TEAM ORDAL'
+  )
+    .toUpperCase()
+    .slice(0, 100);
+  const nextTeamTag = (
+    String(patch.teamTag ?? current?.teamTag ?? '').trim() || deriveTeamTag(nextTeamName)
+  )
+    .toUpperCase()
+    .slice(0, 16);
+  const nextLogo = String(patch.teamLogo ?? current?.teamLogo ?? '');
+  const safeLogo = nextLogo.length <= 600000 ? nextLogo : (current?.teamLogo || '');
+  const nextCore = (
+    Array.isArray(patch.rosterCore) ? patch.rosterCore : (current?.rosterCore ?? [])
+  )
+    .map((s) => String(s).trim())
+    .filter(Boolean)
+    .slice(0, 10);
+  const nextSub = (
+    Array.isArray(patch.rosterSub) ? patch.rosterSub : (current?.rosterSub ?? [])
+  )
+    .map((s) => String(s).trim())
+    .filter(Boolean)
+    .slice(0, 10);
+  const nextCaptainIgn = (
+    String(patch.captainIgn ?? current?.captainIgn ?? '').trim() ||
+    nextCore[0] ||
+    user.displayName ||
+    'CAPTAIN'
+  ).slice(0, 80);
+  const nextCaptainContact = String(patch.captainContact ?? current?.captainContact ?? '')
+    .trim()
+    .slice(0, 120);
+  const nextPrimaryGame = (patch.primaryGame ?? current?.primaryGame ?? 'POINT BLANK') as ScrimGame;
+
+  const nextProfile: TeamProfile = {
+    teamName: nextTeamName,
+    teamTag: nextTeamTag,
+    teamLogo: safeLogo,
+    primaryGame: nextPrimaryGame,
+    captainIgn: nextCaptainIgn,
+    captainContact: nextCaptainContact,
+    rosterCore: nextCore,
+    rosterSub: nextSub,
+  };
+
+  if (
+    current &&
+    user.displayName === nextProfile.teamName &&
+    JSON.stringify(current) === JSON.stringify(nextProfile)
+  ) {
+    return user;
+  }
+
+  try {
+    await updateDoc(doc(db, 'users', uid), {
+      displayName: nextProfile.teamName,
+      teamProfile: nextProfile,
+    });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.UPDATE, `users/${uid}`);
+  }
+
+  const updatedUser: AuthUser = {
+    ...user,
+    id: uid,
+    displayName: nextProfile.teamName,
+    teamProfile: nextProfile,
+  };
+  emitAuthUserUpdated(updatedUser);
+  return updatedUser;
+}
 
 export interface TeamOnboardingPrefillInput {
   teamName: string;
@@ -706,13 +810,17 @@ export async function updateTeamProfileInFirestore(
     rosterCore: [],
     rosterSub: [],
   };
+  const nextLogo = String(patch.teamLogo ?? current.teamLogo);
+  if (nextLogo.length > 600000) {
+    throw new Error('Ukuran logo tim terlalu besar. Gunakan gambar maksimal 450 KB.');
+  }
   const nextProfile: TeamProfile = {
-    teamName: String(patch.teamName ?? current.teamName).trim().toUpperCase() || current.teamName,
+    teamName: String(patch.teamName ?? current.teamName).trim().toUpperCase().slice(0, 100) || current.teamName,
     teamTag: String(patch.teamTag ?? current.teamTag).trim().toUpperCase().slice(0, 16) || current.teamTag,
-    teamLogo: String(patch.teamLogo ?? current.teamLogo),
+    teamLogo: nextLogo,
     primaryGame: (patch.primaryGame ?? current.primaryGame) as ScrimGame,
-    captainIgn: String(patch.captainIgn ?? current.captainIgn).trim() || current.captainIgn,
-    captainContact: String(patch.captainContact ?? current.captainContact).trim(),
+    captainIgn: String(patch.captainIgn ?? current.captainIgn).trim().slice(0, 80) || current.captainIgn,
+    captainContact: String(patch.captainContact ?? current.captainContact).trim().slice(0, 120),
     rosterCore: Array.isArray(patch.rosterCore) ? patch.rosterCore.slice(0, 10) : current.rosterCore,
     rosterSub: Array.isArray(patch.rosterSub) ? patch.rosterSub.slice(0, 10) : current.rosterSub,
   };
@@ -729,7 +837,7 @@ export async function updateTeamProfileInFirestore(
     displayName: nextProfile.teamName,
     teamProfile: nextProfile,
   };
-  cachedAuthUser = updatedUser;
+  emitAuthUserUpdated(updatedUser);
   return { user: updatedUser };
 }
 
@@ -1265,6 +1373,38 @@ export async function createSquadInFirestore(
     handleFirestoreError(err, OperationType.CREATE, `squads/${id}`);
   }
 
+  if (user.role === 'TEAM') {
+    const existingCombined = [
+      ...(user.teamProfile?.rosterCore || []),
+      ...(user.teamProfile?.rosterSub || []),
+    ].map((s) => s.trim());
+    const incomingRoster = publicSquad.roster;
+    const isSameCombined =
+      existingCombined.length === incomingRoster.length &&
+      existingCombined.every((item, idx) => item === incomingRoster[idx]);
+
+    const nextRosterCore = isSameCombined
+      ? (user.teamProfile?.rosterCore || []).slice(0, 10)
+      : incomingRoster.length > 5
+        ? incomingRoster.slice(0, 5)
+        : incomingRoster.slice(0, 10);
+    const nextRosterSub = isSameCombined
+      ? (user.teamProfile?.rosterSub || []).slice(0, 10)
+      : incomingRoster.length > 5
+        ? incomingRoster.slice(5, 10)
+        : [];
+
+    await syncTeamProfileForTeamUser(user, {
+      teamName: publicSquad.name,
+      teamTag: publicSquad.tag,
+      primaryGame: user.teamProfile?.primaryGame || trn.game,
+      captainIgn: publicSquad.captainIgn,
+      captainContact: privateSquad.captainContact || user.teamProfile?.captainContact || '',
+      rosterCore: nextRosterCore,
+      rosterSub: nextRosterSub,
+    });
+  }
+
   return {
     ...publicSquad,
     captainContact: privateSquad.captainContact,
@@ -1509,42 +1649,70 @@ export async function createScrimInFirestore(data: Partial<ScrimSession>): Promi
           .filter(Boolean)
           .slice(0, 10);
 
+  const hostTeamLogo = String(data.hostTeamLogo || user.teamProfile?.teamLogo || '');
+  const challengerTeamLogo =
+    mode === 'DIRECT_CHALLENGE' ? String(data.challengerTeamLogo || '') : '';
+  if (hostTeamLogo.length > 600000 || challengerTeamLogo.length > 600000) {
+    throw new Error('Ukuran logo tim terlalu besar. Gunakan gambar dengan ukuran lebih kecil.');
+  }
+
+  const hostTeamName = (
+    String(data.hostTeamName || '').trim() ||
+    String(user.teamProfile?.teamName || '').trim() ||
+    'HOST TEAM'
+  )
+    .toUpperCase()
+    .slice(0, 100);
+  const directChallengerName =
+    mode === 'DIRECT_CHALLENGE'
+      ? (String(data.challengerTeamName || '').trim() || 'CHALLENGER TEAM').toUpperCase().slice(0, 100)
+      : '';
+
   const item: ScrimSession = {
     id: makeId('scr'),
     game: scrimGame,
-    date: scrimDate,
-    timeSlot: scrimTimeSlot,
+    date: scrimDate.slice(0, 32),
+    timeSlot: scrimTimeSlot.slice(0, 32),
     mode,
     status: mode === 'DIRECT_CHALLENGE' ? 'WAITING_APPROVAL' : 'OPEN_LOBBY',
-    casterId: caster ? caster.id : 'none',
-    casterName: caster ? caster.name : 'Tanpa Caster (Self-Hosted)',
+    casterId: (caster ? caster.id : 'none').slice(0, 128),
+    casterName: (caster ? caster.name : 'Tanpa Caster (Self-Hosted)').slice(0, 100),
     casterRate,
     casterApprovalStatus: caster ? 'PENDING' : 'NOT_REQUIRED',
     platformFee,
     totalCost,
     splitCostPerTeam,
-    hostUserId: user.id,
-    hostTeamName: String(data.hostTeamName || user.teamProfile?.teamName || 'HOST TEAM').toUpperCase(),
-    hostTeamLogo: String(data.hostTeamLogo || user.teamProfile?.teamLogo || ''),
+    hostUserId: auth.currentUser?.uid || user.id,
+    hostTeamName,
+    hostTeamLogo,
     hostRosterCore: parseList(data.hostRosterCore),
     hostRosterSub: parseList(data.hostRosterSub),
-    challengerTeamName:
-      mode === 'DIRECT_CHALLENGE'
-        ? String(data.challengerTeamName || 'CHALLENGER TEAM').toUpperCase()
-        : '',
-    challengerTeamLogo: mode === 'DIRECT_CHALLENGE' ? String(data.challengerTeamLogo || '') : '',
+    challengerTeamName: directChallengerName,
+    challengerTeamLogo,
     challengerRosterCore: mode === 'DIRECT_CHALLENGE' ? parseList(data.challengerRosterCore) : [],
     challengerRosterSub: mode === 'DIRECT_CHALLENGE' ? parseList(data.challengerRosterSub) : [],
     challengerApplications: [],
     hostPaid: false,
     challengerPaid: false,
-    createdAt: formatWibTimestamp(),
+    createdAt: formatWibTimestamp().slice(0, 64),
   };
 
   try {
     await setDoc(doc(db, 'scrims', item.id), stripUndefined(item as unknown as Record<string, unknown>));
   } catch (err) {
     handleFirestoreError(err, OperationType.CREATE, `scrims/${item.id}`);
+  }
+  if (user.role === 'TEAM') {
+    await syncTeamProfileForTeamUser(user, {
+      teamName: item.hostTeamName,
+      teamLogo: item.hostTeamLogo || user.teamProfile?.teamLogo || '',
+      primaryGame: user.teamProfile?.primaryGame || item.game,
+      rosterCore:
+        item.hostRosterCore.length > 0
+          ? item.hostRosterCore
+          : user.teamProfile?.rosterCore || [],
+      rosterSub: item.hostRosterSub,
+    });
   }
   return item;
 }
@@ -1568,23 +1736,34 @@ export async function challengeScrimInFirestore(
   if (scrim.status !== 'OPEN_LOBBY') {
     throw new Error('Sesi scrim ini sudah tidak membuka pendaftaran penantang.');
   }
-  if (scrim.hostUserId === user.id) {
+  if (scrim.hostUserId === (auth.currentUser?.uid || user.id)) {
     throw new Error('Anda tidak dapat menantang lobby milik tim Anda sendiri.');
   }
 
+  const challengerTeamLogo = String(data.challengerTeamLogo || '');
+  if (challengerTeamLogo.length > 600000) {
+    throw new Error('Ukuran logo tim terlalu besar. Gunakan gambar dengan ukuran lebih kecil.');
+  }
+  const challengerTeamName = (String(data.challengerTeamName || '').trim() || 'CHALLENGER TEAM')
+    .toUpperCase()
+    .slice(0, 100);
+
   const apps = Array.isArray(scrim.challengerApplications) ? [...scrim.challengerApplications] : [];
-  if (apps.some((a) => a.applicantUserId === user.id && a.status !== 'REJECTED')) {
+  if (apps.some((a) => a.applicantUserId === (auth.currentUser?.uid || user.id) && a.status !== 'REJECTED')) {
     throw new Error('Tim Anda sudah mengajukan tantangan pada lobby ini.');
   }
+
+  const nextCore = data.challengerRosterCore.map((s) => String(s).trim()).filter(Boolean).slice(0, 10);
+  const nextSub = data.challengerRosterSub.map((s) => String(s).trim()).filter(Boolean).slice(0, 10);
 
   apps.push(
     stripUndefined({
       id: makeId('app'),
-      teamName: data.challengerTeamName.trim().toUpperCase(),
-      teamLogo: data.challengerTeamLogo || '',
-      rosterCore: data.challengerRosterCore.slice(0, 10),
-      rosterSub: data.challengerRosterSub.slice(0, 10),
-      applicantUserId: user.id,
+      teamName: challengerTeamName,
+      teamLogo: challengerTeamLogo,
+      rosterCore: nextCore,
+      rosterSub: nextSub,
+      applicantUserId: auth.currentUser?.uid || user.id,
       applicantEmail: '',
       note: data.note?.trim().slice(0, 200) || undefined,
       status: 'PENDING' as const,
@@ -1597,6 +1776,13 @@ export async function challengeScrimInFirestore(
   } catch (err) {
     handleFirestoreError(err, OperationType.UPDATE, `scrims/${id}`);
   }
+  await syncTeamProfileForTeamUser(user, {
+    teamName: challengerTeamName,
+    teamLogo: challengerTeamLogo || user.teamProfile?.teamLogo || '',
+    primaryGame: user.teamProfile?.primaryGame || scrim.game,
+    rosterCore: nextCore.length > 0 ? nextCore : user.teamProfile?.rosterCore || [],
+    rosterSub: nextSub,
+  });
   return { ...scrim, challengerApplications: apps };
 }
 

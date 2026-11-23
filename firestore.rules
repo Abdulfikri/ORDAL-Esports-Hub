@@ -101,7 +101,7 @@ service cloud.firestore {
           data.teamProfile.keys().hasOnly(['teamName', 'teamTag', 'teamLogo', 'primaryGame', 'captainIgn', 'captainContact', 'rosterCore', 'rosterSub']) &&
           isNonEmptyStr(data.teamProfile.teamName, 100) &&
           isNonEmptyStr(data.teamProfile.teamTag, 16) &&
-          data.teamProfile.teamLogo is string && data.teamProfile.teamLogo.size() <= 200000 &&
+          data.teamProfile.teamLogo is string && data.teamProfile.teamLogo.size() <= 600000 &&
           data.teamProfile.primaryGame in ['POINT BLANK', 'FREE FIRE', 'EFOOTBALL'] &&
           isNonEmptyStr(data.teamProfile.captainIgn, 80) &&
           data.teamProfile.captainContact is string && data.teamProfile.captainContact.size() <= 120 &&
@@ -273,12 +273,12 @@ service cloud.firestore {
         data.splitCostPerTeam is number && data.splitCostPerTeam >= 0 &&
         isOptStr(data, 'hostUserId', 128) &&
         isNonEmptyStr(data.hostTeamName, 100) &&
-        data.hostTeamLogo is string && data.hostTeamLogo.size() <= 200000 &&
+        data.hostTeamLogo is string && data.hostTeamLogo.size() <= 600000 &&
         isBoundedStrList(data.hostRosterCore, 10) &&
         isBoundedStrList(data.hostRosterSub, 10) &&
         isOptStr(data, 'challengerUserId', 128) &&
         data.challengerTeamName is string && data.challengerTeamName.size() <= 100 &&
-        data.challengerTeamLogo is string && data.challengerTeamLogo.size() <= 200000 &&
+        data.challengerTeamLogo is string && data.challengerTeamLogo.size() <= 600000 &&
         isBoundedStrList(data.challengerRosterCore, 10) &&
         isBoundedStrList(data.challengerRosterSub, 10) &&
         (!( 'challengerApplications' in data ) || (data.challengerApplications is list && data.challengerApplications.size() <= 30 && (data.challengerApplications.size() == 0 || data.challengerApplications[0] is map))) &&
